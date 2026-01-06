@@ -219,15 +219,15 @@
         
         <h3 style="color: #1DB954;">🎵 Ambiente Musical</h3>
         <div class="music-container">
-            <iframe id="music-player" width="100%" height="150" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe id="music-player" width="100%" height="200" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             
             <div id="dm-music-controls" style="margin-top:5px;">
                 <input type="text" id="music-url-input" placeholder="Pega URL de YouTube aquí">
                 <button class="primary" onclick="setMusic()" style="width:100%">▶️ Poner para Todos</button>
                 <div class="music-links">
-                    <button onclick="quickMusic('https://youtu.be/t3B802PIuB0?si=YmdrnfjsOhqthYU1')">⚔️ Batalla</button>
-                    <button onclick="quickMusic('https://youtu.be/vyg5jJrZ42s?si=l0UdPIgwqIuNpqcU')">🍺 Taberna</button>
-                    <button onclick="quickMusic('https://youtu.be/sHA_4wfQhE8?si=pg4db9gENtgtF9Ro')">🌲 Bosque</button>
+                    <button onclick="quickMusic('https://www.youtube.com/watch?v=Prq4v7tXNQA')">⚔️ Batalla</button>
+                    <button onclick="quickMusic('https://www.youtube.com/watch?v=x4kCa_YyWp0')">🍺 Taberna</button>
+                    <button onclick="quickMusic('https://www.youtube.com/watch?v=NbH1059K2Eo')">🌲 Bosque</button>
                 </div>
             </div>
         </div>
@@ -514,18 +514,19 @@
         let currentMusicId = "";
 
         function checkMusic() {
-            // Si la música en DB es diferente a la actual, la actualizamos
             if (gameState.musicId && gameState.musicId !== currentMusicId) {
                 currentMusicId = gameState.musicId;
                 document.getElementById('music-player').src = `https://www.youtube.com/embed/${currentMusicId}?autoplay=1&loop=1&playlist=${currentMusicId}`;
             }
         }
 
-        // Extraer ID de YouTube de cualquier link
+        // FUNCIÓN MEJORADA PARA EXTRAER ID DE YOUTUBE (Robust RegEx)
         function getYouTubeID(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+            // Elimina espacios en blanco por si se copió mal
+            url = url.trim();
+            // Regex capaz de leer youtu.be, embed, watch?v=, etc.
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]*)/);
+            return (match && match[1].length === 11) ? match[1] : null;
         }
 
         window.setMusic = async () => {
@@ -534,7 +535,7 @@
             if (videoId) {
                 await updateDoc(gameRef, { musicId: videoId });
             } else {
-                alert("Link de YouTube inválido.");
+                alert("Link de YouTube inválido. Asegúrate de copiar la URL completa.");
             }
         };
 
@@ -545,7 +546,6 @@
 
         // --- ACCIONES DE JUEGO ---
         function getRandomColor() {
-            // Generador HSL Aleatorio para colores vivos y únicos
             const hue = Math.floor(Math.random() * 360);
             return `hsl(${hue}, 70%, 50%)`;
         }
