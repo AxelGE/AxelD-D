@@ -26,7 +26,6 @@
             height: 100vh;
             width: 100vw;
             display: grid;
-            /* CAMBIO: 420px para asegurar que se vea el control de volumen de YouTube */
             grid-template-columns: 420px 1fr 300px;
             grid-template-rows: 60px 1fr;
             overflow: hidden;
@@ -160,10 +159,13 @@
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
 
-        /* REPRODUCTOR MÚSICA */
-        .music-container { margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 5px; border-radius: 5px; }
-        .music-links { display: flex; gap: 5px; margin-bottom: 5px; }
-        .music-links button { font-size: 0.7rem; padding: 4px; }
+        /* REPRODUCTOR MÚSICA NATIVO */
+        .music-container { 
+            margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 10px; border-radius: 5px; text-align: center;
+        }
+        audio { width: 100%; margin-bottom: 10px; }
+        .music-links { display: flex; gap: 5px; margin-bottom: 5px; justify-content: center; }
+        .music-links button { font-size: 0.8rem; padding: 6px; flex: 1; }
 
         .guide-list { list-style: none; padding: 0; font-size: 0.85rem; color: #aaa; }
         .guide-list li { margin-bottom: 6px; border-bottom: 1px solid #333; padding-bottom: 4px; cursor: pointer; }
@@ -203,16 +205,20 @@
         
         <h3 style="color: #1DB954;">🎵 Ambiente Musical</h3>
         <div class="music-container">
-            <iframe id="music-player" width="100%" height="300" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <audio id="audio-player" controls loop>
+                <source src="" type="audio/mpeg">
+                Tu navegador no soporta audio.
+            </audio>
             
-            <div id="dm-music-controls" style="margin-top:5px;">
-                <input type="text" id="music-url-input" placeholder="Pega URL de YouTube aquí">
-                <button class="primary" onclick="setMusic()" style="width:100%">▶️ Poner para Todos</button>
+            <p style="font-size:0.7rem; color:#aaa; margin-top:5px;">*El DM controla la música.</p>
+            
+            <div id="dm-music-controls">
                 <div class="music-links">
-                    <button onclick="quickMusic('https://www.youtube.com/watch?v=sd1Otp7s1Fk')">⚔️ Batalla</button>
-                    <button onclick="quickMusic('https://www.youtube.com/watch?v=u2jLHdpo2AQ')">🍺 Taberna</button>
-                    <button onclick="quickMusic('https://www.youtube.com/watch?v=4Y6n-1XQSfE')">🌲 Bosque</button>
+                    <button onclick="playMusic('batalla.mp3')">⚔️ Batalla</button>
+                    <button onclick="playMusic('taberna.mp3')">🍺 Taberna</button>
+                    <button onclick="playMusic('bosque.mp3')">🌲 Bosque</button>
                 </div>
+                <button class="danger" onclick="stopMusic()" style="width:100%; font-size:0.8rem;">⏹️ Detener Música</button>
             </div>
         </div>
 
@@ -224,13 +230,16 @@
             <button onclick="updateMap()" style="width:100%">Cargar Mapa Manual</button>
             <button onclick="toggleGrid()" style="width:100%; border: 1px dashed #777;">📏 Mostrar/Ocultar Cuadrícula</button>
             <button class="danger" onclick="resetChat()" style="width:100%; margin-top:5px;">Limpiar Chat</button>
-            <button class="danger" onclick="resetCharacters()" style="width:100%; margin-top:5px; border: 1px solid #f00;">☠️ Borrar Todos los PJs</button>
+            <button class="danger" onclick="resetCharacters()" style="width:100%; margin-top:5px; border: 1px solid #f00;">☠️ Borrar PJs</button>
+            
+            <button class="danger" onclick="endGame()" style="width:100%; margin-top:15px; padding:15px; background: darkred; color: white; font-weight: bold; border: 2px solid red;">
+                🛑 TERMINAR PARTIDA
+            </button>
         </div>
 
         <hr style="border-color: #333; margin: 20px 0;">
 
         <h3 style="color: var(--accent);">Grimorio</h3>
-        
         <div id="creation-zone">
             <h4>Crear Nuevo Héroe</h4>
             <input type="text" id="new-name" placeholder="Nombre del Héroe">
@@ -241,14 +250,13 @@
                 <option value="Orco">Orco</option>
                 <option value="Mago">Mago</option>
             </select>
-            <p style="font-size:0.7rem; color:#888;">*Se generarán stats aleatorios</p>
             <button class="primary" onclick="createCharacter()" style="width:100%">Despertar Héroe</button>
         </div>
 
         <hr style="border-color: #333; margin: 20px 0;">
 
         <div>
-            <h4 style="color: var(--magic);">✨ Comandos Mágicos IA</h4>
+            <h4 style="color: var(--magic);">✨ Comandos IA</h4>
             <ul class="guide-list">
                 <li onclick="pasteCmd('El grupo viaja a una mazmorra llena de lava.')">🌋 "Ir a mazmorra de lava..."</li>
                 <li onclick="pasteCmd('Entramos en una biblioteca antigua y polvorienta.')">📚 "Ir a biblioteca..."</li>
@@ -260,7 +268,7 @@
 
     <div class="main-area">
         <div id="map-container">
-            <img id="map-img" src="https://images.unsplash.com/photo-1642436733644-8a1a30d5254c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" alt="Mapa del Juego">
+            <img id="map-img" src="fondo.png" alt="Mapa del Juego">
             <div id="grid-layer" class="layer"></div>
             <div id="token-layer" class="layer"></div>
         </div>
@@ -313,7 +321,7 @@
             alert("Error de conexión. Desactiva AdBlock.");
         }
 
-        let gameState = { chat: [], characters: [], mapUrl: "", musicId: "" };
+        let gameState = { chat: [], characters: [], mapUrl: "", musicUrl: "" };
         let localPlayer = sessionStorage.getItem("dnd_player") || null;
 
         // --- AUTH ---
@@ -344,7 +352,7 @@
             try {
                 const docSnap = await getDoc(gameRef);
                 if (!docSnap.exists()) {
-                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "", musicId: "" });
+                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "fondo.png", musicUrl: "" });
                 }
                 onSnapshot(gameRef, (doc) => {
                     if(doc.exists()) {
@@ -396,7 +404,13 @@
         
         function renderMap() {
             if (isDragging) return; 
-            if(gameState.mapUrl) document.getElementById('map-img').src = gameState.mapUrl;
+            // Si no hay URL, usar fondo.jpg
+            const currentMap = gameState.mapUrl || "fondo.png";
+            const mapImg = document.getElementById('map-img');
+            // Solo cambiar si la fuente es diferente para evitar parpadeo
+            if (!mapImg.src.includes(currentMap)) {
+                mapImg.src = currentMap;
+            }
             
             const tokenLayer = document.getElementById('token-layer');
             tokenLayer.innerHTML = ""; 
@@ -421,11 +435,7 @@
             });
         }
 
-        function startDrag(e, id) {
-            isDragging = true;
-            draggedCharId = id;
-            e.preventDefault(); e.stopPropagation();
-        }
+        function startDrag(e, id) { isDragging = true; draggedCharId = id; e.preventDefault(); e.stopPropagation(); }
 
         const mapContainer = document.getElementById('map-container');
         window.addEventListener('mousemove', (e) => {
@@ -457,31 +467,32 @@
             await updateDoc(gameRef, { characters: chars });
         });
 
-        // --- MÚSICA & AUDIO (FIXED) ---
-        let currentMusicId = "";
+        // --- SISTEMA DE MÚSICA (NATIVO HTML5) ---
+        let currentMusicUrl = "";
+        
         function checkMusic() {
-            if (gameState.musicId && gameState.musicId !== currentMusicId) {
-                currentMusicId = gameState.musicId;
-                document.getElementById('music-player').src = `https://www.youtube.com/embed/${currentMusicId}?autoplay=1&loop=1&playlist=${currentMusicId}`;
+            // Sincronización de música
+            if (gameState.musicUrl && gameState.musicUrl !== currentMusicUrl) {
+                currentMusicUrl = gameState.musicUrl;
+                const audio = document.getElementById('audio-player');
+                audio.src = currentMusicUrl;
+                audio.play().catch(e => console.log("Auto-play bloqueado hasta interacción usuario."));
+            } else if (!gameState.musicUrl && currentMusicUrl) {
+                // Si se borró la música, detener
+                currentMusicUrl = "";
+                const audio = document.getElementById('audio-player');
+                audio.pause();
+                audio.src = "";
             }
         }
-        
-        // FUNCIÓN CORREGIDA PARA LINKS
-        function getYouTubeID(url) {
-            url = url.trim();
-            // Soporta youtu.be, v=, embed, etc.
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
 
-        window.setMusic = async () => {
-            const url = document.getElementById('music-url-input').value;
-            const videoId = getYouTubeID(url);
-            if (videoId) await updateDoc(gameRef, { musicId: videoId });
-            else alert("Link inválido. Prueba con la URL completa.");
+        window.playMusic = async (url) => {
+            await updateDoc(gameRef, { musicUrl: url });
         };
-        window.quickMusic = async (url) => { const videoId = getYouTubeID(url); if(videoId) await updateDoc(gameRef, { musicId: videoId }); };
+
+        window.stopMusic = async () => {
+            await updateDoc(gameRef, { musicUrl: "" });
+        };
 
         // --- LÓGICA DE JUEGO ---
         function getRandomColor(type = "player") {
@@ -521,8 +532,21 @@
         };
         
         window.resetCharacters = async () => {
-            if(confirm("¿ESTÁS SEGURO? Esto borrará a todos los héroes y enemigos.")) {
+            if(confirm("¿Borrar SOLO los personajes?")) {
                 await updateDoc(gameRef, { characters: [] });
+            }
+        };
+
+        // --- TERMINAR PARTIDA (RESET TOTAL) ---
+        window.endGame = async () => {
+            if(confirm("⚠️ ¿ESTÁS SEGURO? ESTO BORRARÁ TODO: CHAT, PERSONAJES Y MAPA.")) {
+                await updateDoc(gameRef, { 
+                    characters: [], 
+                    chat: [],
+                    mapUrl: "fondo.png", // Reset a imagen por defecto
+                    musicUrl: ""
+                });
+                alert("La partida ha terminado. Todo ha sido reseteado.");
             }
         };
 
