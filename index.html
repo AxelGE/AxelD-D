@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Portal Gaming - AI Master</title>
+    <title>Dungeon Portal Gaming</title>
     <link rel="icon" href="dd.png">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -35,13 +35,16 @@
         /* --- LOGIN MODAL --- */
         #login-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,1); z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,1);
+            z-index: 2000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
         }
         .login-box {
             background: var(--bg-panel); border: 2px solid var(--accent);
             padding: 40px; text-align: center; border-radius: 10px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); max-width: 400px; width: 90%;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+            max-width: 400px; width: 90%;
         }
         .login-box input { 
             width: 100%; font-size: 1.2rem; padding: 10px; margin: 20px 0; 
@@ -54,10 +57,8 @@
         }
         h1 { font-family: 'Cinzel', serif; color: var(--accent); margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
 
-        /* PANELES CON SCROLL */
         .panel { 
-            background: var(--bg-panel); padding: 15px; 
-            overflow-y: auto; /* SCROLL HABILITADO */
+            background: var(--bg-panel); padding: 15px; overflow-y: auto; 
             border-right: 1px solid #333; z-index: 5; height: 100%; box-sizing: border-box;
         }
         .panel-right { border-left: 1px solid #333; border-right: none; }
@@ -83,13 +84,20 @@
         }
         
         #map-container {
-            flex: 1; min-height: 0; position: relative; background: #111;
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            flex: 1; min-height: 0; position: relative; 
+            background: #111;
+            display: flex; align-items: center; justify-content: center; 
+            overflow: hidden;
         }
-        #map-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; transition: opacity 0.5s; }
+        #map-img { 
+            width: 100%; height: 100%; 
+            object-fit: contain; /* Estira la imagen respetando proporciones */
+            pointer-events: none; transition: opacity 0.5s;
+        }
 
         #chat-container {
-            flex: 0 0 300px; border-top: 2px solid var(--accent); background: rgba(0,0,0,0.95);
+            flex: 0 0 300px; border-top: 2px solid var(--accent); 
+            background: rgba(0,0,0,0.95);
             display: flex; flex-direction: column; z-index: 10;
         }
         #chat-box { flex-grow: 1; overflow-y: auto; padding: 15px; font-size: 0.95rem; }
@@ -110,9 +118,9 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; font-family: 'Cinzel', serif; color: white;
             text-shadow: 0 0 4px black; box-shadow: 0 0 10px rgba(0,0,0,0.8);
-            border: 2px solid white; transition: top 0.1s, left 0.1s; z-index: 100;
+            border: 2px solid white; transition: top 0.05s, left 0.05s; z-index: 100;
         }
-        .token:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); z-index: 101; transition: none; }
+        .token:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); z-index: 200; transition: none; }
         .token-name {
             position: absolute; top: -20px; background: rgba(0,0,0,0.7); 
             padding: 2px 5px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; pointer-events: none;
@@ -151,6 +159,7 @@
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
 
+        /* REPRODUCTOR MÚSICA GRANDE */
         .music-container { margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 5px; border-radius: 5px; }
         .music-links { display: flex; gap: 5px; margin-bottom: 5px; }
         .music-links button { font-size: 0.7rem; padding: 4px; }
@@ -193,7 +202,7 @@
         
         <h3 style="color: #1DB954;">🎵 Ambiente Musical</h3>
         <div class="music-container">
-            <iframe id="music-player" width="100%" height="200" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe id="music-player" width="100%" height="300" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             
             <div id="dm-music-controls" style="margin-top:5px;">
                 <input type="text" id="music-url-input" placeholder="Pega URL de YouTube aquí">
@@ -227,13 +236,13 @@
         <hr style="border-color: #333; margin: 20px 0;">
 
         <div>
-            <h4 style="color: var(--magic);">✨ Comandos Mágicos IA</h4>
-            <p style="font-size:0.8rem;">La IA detectará lugares y enemigos:</p>
+            <h4 style="color: var(--magic);">✨ Comandos IA (Automáticos)</h4>
+            <p style="font-size:0.8rem; color:#aaa;">Escribe esto en el chat y pulsa "✨ IA"</p>
             <ul class="guide-list">
-                <li onclick="pasteCmd('El grupo entra en una taberna ruidosa y oscura.')">🍺 "Vamos a una taberna..."</li>
-                <li onclick="pasteCmd('Viajamos a un bosque encantado con niebla.')">🌲 "Vamos a un bosque..."</li>
-                <li onclick="pasteCmd('Nos atacan 3 Goblins armados con dagas.')">⚔️ "Aparecen enemigos..."</li>
-                <li onclick="pasteCmd('Un Dragon Rojo desciende del cielo.')">🐉 "Aparece un Boss..."</li>
+                <li onclick="pasteCmd('El grupo viaja a una mazmorra llena de lava.')">🌋 "Ir a mazmorra de lava..."</li>
+                <li onclick="pasteCmd('Entramos en una biblioteca antigua y polvorienta.')">📚 "Ir a biblioteca..."</li>
+                <li onclick="pasteCmd('Aparecen 3 Esqueletos guerreros.')">💀 "Aparecen 3 Esqueletos..."</li>
+                <li onclick="pasteCmd('Un Dragon Rojo gigante aterriza frente a nosotros.')">🐉 "Aparece un Dragon..."</li>
             </ul>
         </div>
 
@@ -258,7 +267,7 @@
         <div id="chat-container">
             <div id="chat-box"></div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Escribe aquí... (La IA lee tus intenciones)">
+                <input type="text" id="chat-input" placeholder="Narrar historia o acción... (IA detecta mapas y enemigos)">
                 <button class="primary" onclick="sendMessage()">Enviar</button>
                 <button onclick="askAIChat()" style="background: linear-gradient(45deg, #bd93f9, #8e44ad); border:none; color:white;">✨ IA</button>
             </div>
@@ -275,7 +284,7 @@
                 <button onclick="rollDice(10)">d10</button>
             </div>
         </div>
-        <h3 style="border-bottom: 1px solid #444;">Personajes & Enemigos</h3>
+        <h3 style="border-bottom: 1px solid #444;">Lista de Personajes</h3>
         <div id="char-list"></div>
     </div>
 
@@ -323,10 +332,7 @@
             checkLogin();
         };
         window.logout = () => {
-            if(confirm("¿Salir de la sesión?")) {
-                sessionStorage.removeItem("dnd_player");
-                location.reload();
-            }
+            if(confirm("¿Salir?")) { sessionStorage.removeItem("dnd_player"); location.reload(); }
         };
         document.getElementById('login-name').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.login(); });
         checkLogin();
@@ -368,22 +374,23 @@
                     <div class="char-card" style="border-left-color: ${char.color || '#fff'}">
                         <div class="char-header">
                             <div><span class="char-name">${char.name}</span> <span class="char-meta">${char.race}</span></div>
-                            <button class="danger" onclick="window.deleteCharacter('${char.name}')">💀</button>
+                            <button class="danger" onclick="window.deleteCharacter('${char.id}')">💀</button>
                         </div>
                         <div class="hp-container"><div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div><div class="hp-text">${char.hp} / ${char.maxHp} HP</div></div>
                         <div class="stats-grid" style="font-size:0.7rem;">
-                            <div class="stat-box">FUE: ${stats.str}</div> <div class="stat-box">DES: ${stats.dex}</div> <div class="stat-box">INT: ${stats.int || '?'}</div>
+                            <div class="stat-box">FUE: ${stats.str}</div> <div class="stat-box">DES: ${stats.dex}</div> <div class="stat-box">INT: ${stats.int}</div>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                            <button onclick="window.modHp('${char.name}', -1)">Herir</button>
-                            <button onclick="window.modHp('${char.name}', 1)">Curar</button>
+                            <button onclick="window.modHp('${char.id}', -1)">Herir</button>
+                            <button onclick="window.modHp('${char.id}', 1)">Curar</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        let isDragging = false; let draggedCharName = null;
+        let isDragging = false; let draggedCharId = null;
+        
         function renderMap() {
             if (isDragging) return; 
             if(gameState.mapUrl) document.getElementById('map-img').src = gameState.mapUrl;
@@ -392,21 +399,32 @@
             tokenLayer.innerHTML = ""; 
             
             gameState.characters.forEach(char => {
+                // Posición segura
                 const x = char.x || 50; const y = char.y || 50;
+                
                 const token = document.createElement('div');
                 token.className = 'token';
+                token.id = `token-${char.id}`; // ID ÚNICO DOM
                 token.style.left = x + '%'; token.style.top = y + '%';
                 token.style.backgroundColor = char.color || '#555';
                 token.innerText = char.name.substring(0, 2).toUpperCase();
+                
                 const label = document.createElement('div');
                 label.className = 'token-name'; label.innerText = char.name;
                 token.appendChild(label);
-                token.onmousedown = (e) => startDrag(e, char.name);
+                
+                // DRAG EVENT (USAMOS ID NO NOMBRE)
+                token.onmousedown = (e) => startDrag(e, char.id);
                 tokenLayer.appendChild(token);
             });
         }
 
-        function startDrag(e, charName) { isDragging = true; draggedCharName = charName; e.preventDefault(); e.stopPropagation(); }
+        function startDrag(e, id) {
+            isDragging = true;
+            draggedCharId = id;
+            e.preventDefault(); e.stopPropagation();
+        }
+
         const mapContainer = document.getElementById('map-container');
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
@@ -414,17 +432,26 @@
             let x = ((e.clientX - rect.left) / rect.width) * 100;
             let y = ((e.clientY - rect.top) / rect.height) * 100;
             x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
-            const tokens = document.querySelectorAll('.token');
-            tokens.forEach(t => { if(t.innerText.includes(draggedCharName.substring(0, 2).toUpperCase())) { t.style.left = x + '%'; t.style.top = y + '%'; t.style.zIndex = 1000; } });
+            
+            // Mover visualmente el token correcto por su ID de DOM
+            const tokenEl = document.getElementById(`token-${draggedCharId}`);
+            if(tokenEl) {
+                tokenEl.style.left = x + '%'; tokenEl.style.top = y + '%'; tokenEl.style.zIndex = 1000;
+            }
         });
+
         window.addEventListener('mouseup', async (e) => {
             if (!isDragging) return;
             const rect = mapContainer.getBoundingClientRect();
             let x = ((e.clientX - rect.left) / rect.width) * 100;
             let y = ((e.clientY - rect.top) / rect.height) * 100;
             x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
-            const chars = gameState.characters.map(c => { if(c.name === draggedCharName) { c.x = x; c.y = y; } return c; });
-            isDragging = false; draggedCharName = null;
+            
+            const chars = gameState.characters.map(c => { 
+                if(c.id === draggedCharId) { c.x = x; c.y = y; } 
+                return c; 
+            });
+            isDragging = false; draggedCharId = null;
             await updateDoc(gameRef, { characters: chars });
         });
 
@@ -438,6 +465,7 @@
         }
         function getYouTubeID(url) {
             url = url.trim();
+            // REGEX MEJORADO PARA DETECTAR CUALQUIER TIPO DE LINK
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]*)/);
             return (match && match[1].length === 11) ? match[1] : null;
         }
@@ -445,24 +473,28 @@
             const url = document.getElementById('music-url-input').value;
             const videoId = getYouTubeID(url);
             if (videoId) await updateDoc(gameRef, { musicId: videoId });
-            else alert("Link inválido.");
+            else alert("Link inválido. Asegúrate de que es un video de YouTube.");
         };
         window.quickMusic = async (url) => { const videoId = getYouTubeID(url); if(videoId) await updateDoc(gameRef, { musicId: videoId }); };
 
         // --- LÓGICA DE JUEGO & IA GENERATIVA ---
         function getRandomColor(type = "player") {
-            const hue = type === "enemy" ? Math.floor(Math.random() * 60) + 330 : Math.floor(Math.random() * 360); // Enemigos Rojizos
+            const hue = type === "enemy" ? Math.floor(Math.random() * 60) + 330 : Math.floor(Math.random() * 360);
             return `hsl(${hue}, 70%, 40%)`;
         }
         function rollStat() { return Math.floor(Math.random() * 16) + 3; }
 
-        // Función base para crear personajes (usada por botón y por IA)
+        // Función base para crear personajes (con ID único y posición aleatoria)
         window.spawnCharacter = async (name, race, isEnemy = false) => {
-            if(gameState.characters.find(c => c.name === name)) name = name + " " + Math.floor(Math.random()*100);
+            // DESPLAZAMIENTO ALEATORIO PARA QUE NO SE APILEN
+            const offsetX = 50 + (Math.random() * 10 - 5);
+            const offsetY = 50 + (Math.random() * 10 - 5);
             
             const hp = isEnemy ? Math.floor(Math.random() * 15) + 5 : 20;
             const newChar = { 
-                name, race, hp, maxHp: hp, inventory: [], x: 50, y: 50, 
+                id: Date.now().toString() + Math.random().toString().slice(2,5), // ID ÚNICO
+                name, race, hp, maxHp: hp, inventory: [], 
+                x: offsetX, y: offsetY, 
                 color: getRandomColor(isEnemy ? "enemy" : "player"), 
                 stats: { str: rollStat(), dex: rollStat(), int: rollStat(), per: rollStat(), cha: rollStat() }
             };
@@ -477,14 +509,14 @@
             document.getElementById('new-name').value = "";
         };
 
-        window.deleteCharacter = async (charName) => {
-            if(confirm(`¿Eliminar a ${charName}?`)) {
-                const newChars = gameState.characters.filter(c => c.name !== charName);
+        window.deleteCharacter = async (id) => {
+            if(confirm("¿Eliminar?")) {
+                const newChars = gameState.characters.filter(c => c.id !== id);
                 await updateDoc(gameRef, { characters: newChars });
             }
         };
-        window.modHp = async (name, amount) => {
-            const chars = gameState.characters.map(c => { if(c.name === name) c.hp = Math.min(c.maxHp, Math.max(0, c.hp + amount)); return c; });
+        window.modHp = async (id, amount) => {
+            const chars = gameState.characters.map(c => { if(c.id === id) c.hp = Math.min(c.maxHp, Math.max(0, c.hp + amount)); return c; });
             await updateDoc(gameRef, { characters: chars });
         };
         window.rollDice = async (sides) => {
@@ -513,64 +545,45 @@
             if(!query) return alert("Escribe qué quieres que haga la IA...");
             input.value = "La IA está tejiendo la realidad...";
 
-            // Prompt avanzado para JSON
             const systemPrompt = `
-            Eres un Dungeon Master. 
-            Responde SIEMPRE en formato JSON estricto sin texto adicional.
-            Tu misión es narrar y controlar el juego.
-            
-            Entrada del usuario: "${query}"
-            
-            Debes generar un JSON con esta estructura:
+            Eres un Dungeon Master. Responde SIEMPRE en formato JSON estricto.
+            Entrada: "${query}"
+            JSON Esperado:
             {
-                "narrative": "Tu narración de la historia aquí (máximo 200 caracteres)",
-                "new_map_prompt": "Si el usuario cambia de lugar (ej: bosque, taberna, cueva), escribe una descripción visual para generar una imagen (ej: 'dark dungeon lava top down'). Si no cambia el lugar, pon null.",
-                "spawn_enemies": [ 
-                    {"name": "Nombre", "race": "Raza"} 
-                ] 
-                (Si la narración implica que aparecen enemigos, agrégalos a la lista. Si no, deja la lista vacía [])
-            }
-            `;
+                "narrative": "Texto de la historia (max 200 chars)",
+                "new_map_prompt": "Si cambia el lugar, describe el mapa visualmente (ej: 'lava dungeon top down'). Si no, null.",
+                "spawn_enemies": [ {"name": "Nombre", "race": "Raza"} ] (Si aparecen enemigos, lístalos. Si no, [])
+            }`;
 
             try {
                 const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}`);
                 let text = await res.text();
-                
-                // Limpieza básica por si la IA añade markdown
+                // Limpieza de markdown
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                
                 const aiData = JSON.parse(text);
 
-                // 1. Narración al chat
-                if(aiData.narrative) {
-                    await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: aiData.narrative, type: "ai" }) });
-                }
+                if(aiData.narrative) await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: aiData.narrative, type: "ai" }) });
 
-                // 2. Generación de Mapa Automática
                 if(aiData.new_map_prompt) {
-                    // Usamos seed aleatoria para que siempre varíe
-                    const randomSeed = Math.floor(Math.random() * 1000);
-                    const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${aiData.new_map_prompt} ${randomSeed}?width=1080&height=720&nologo=true`;
+                    const seed = Math.floor(Math.random() * 999);
+                    const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${aiData.new_map_prompt} ${seed}?width=1080&height=720&nologo=true`;
                     await updateDoc(gameRef, { mapUrl: mapUrl });
-                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: "🌍 El escenario ha cambiado.", type: "system" }) });
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: "🌍 Generando nuevo mapa...", type: "system" }) });
                 }
 
-                // 3. Spawn de Enemigos
                 if(aiData.spawn_enemies && aiData.spawn_enemies.length > 0) {
                     for(const enemy of aiData.spawn_enemies) {
                         await window.spawnCharacter(enemy.name, enemy.race, true);
                     }
-                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `⚠️ Han aparecido ${aiData.spawn_enemies.length} enemigos.`, type: "system" }) });
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `⚠️ ${aiData.spawn_enemies.length} enemigos aparecieron.`, type: "system" }) });
                 }
-
                 input.value = "";
-
             } catch(e) {
                 console.error(e);
-                // Fallback si la IA no devuelve JSON válido, solo responde texto plano
-                const fallbackRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent("Eres un DM. Responde brevemente a: " + query)}`);
-                const fallbackText = await fallbackRes.text();
-                await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: fallbackText, type: "ai" }) });
+                // Fallback a texto simple si falla el JSON
+                const fb = await fetch(`https://text.pollinations.ai/${encodeURIComponent("DM responde: " + query)}`);
+                const fbText = await fb.text();
+                await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: fbText, type: "ai" }) });
                 input.value = "";
             }
         };
