@@ -26,8 +26,8 @@
             height: 100vh;
             width: 100vw;
             display: grid;
-            /* CAMBIO: Panel izquierdo más ancho (400px) para ver mejor YouTube */
-            grid-template-columns: 400px 1fr 300px;
+            /* CAMBIO: 420px para asegurar que se vea el control de volumen de YouTube */
+            grid-template-columns: 420px 1fr 300px;
             grid-template-rows: 60px 1fr;
             overflow: hidden;
             user-select: none;
@@ -371,7 +371,6 @@
             charList.innerHTML = gameState.characters.map((char, idx) => {
                 const hpPercent = (char.hp / char.maxHp) * 100;
                 const stats = char.stats || { str: '?', dex: '?' };
-                // Corrección ID para personajes viejos
                 const safeId = char.id || char.name; 
 
                 return `
@@ -404,11 +403,11 @@
             
             gameState.characters.forEach(char => {
                 const x = char.x || 50; const y = char.y || 50;
-                const safeId = char.id || char.name; // Soporte legacy
+                const safeId = char.id || char.name;
 
                 const token = document.createElement('div');
                 token.className = 'token';
-                token.id = `token-${safeId}`; // ID DOM
+                token.id = `token-${safeId}`;
                 token.style.left = x + '%'; token.style.top = y + '%';
                 token.style.backgroundColor = char.color || '#555';
                 token.innerText = char.name.substring(0, 2).toUpperCase();
@@ -458,7 +457,7 @@
             await updateDoc(gameRef, { characters: chars });
         });
 
-        // --- MÚSICA & AUDIO ---
+        // --- MÚSICA & AUDIO (FIXED) ---
         let currentMusicId = "";
         function checkMusic() {
             if (gameState.musicId && gameState.musicId !== currentMusicId) {
@@ -466,16 +465,21 @@
                 document.getElementById('music-player').src = `https://www.youtube.com/embed/${currentMusicId}?autoplay=1&loop=1&playlist=${currentMusicId}`;
             }
         }
+        
+        // FUNCIÓN CORREGIDA PARA LINKS
         function getYouTubeID(url) {
             url = url.trim();
-            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]*)/);
-            return (match && match[1].length === 11) ? match[1] : null;
+            // Soporta youtu.be, v=, embed, etc.
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
         }
+
         window.setMusic = async () => {
             const url = document.getElementById('music-url-input').value;
             const videoId = getYouTubeID(url);
             if (videoId) await updateDoc(gameRef, { musicId: videoId });
-            else alert("Link inválido. Asegúrate de copiar la URL completa.");
+            else alert("Link inválido. Prueba con la URL completa.");
         };
         window.quickMusic = async (url) => { const videoId = getYouTubeID(url); if(videoId) await updateDoc(gameRef, { musicId: videoId }); };
 
@@ -511,15 +515,13 @@
 
         window.deleteCharacter = async (id) => {
             if(confirm("¿Eliminar?")) {
-                // Borra por ID o por Nombre (para viejos)
                 const newChars = gameState.characters.filter(c => c.id !== id && c.name !== id);
                 await updateDoc(gameRef, { characters: newChars });
             }
         };
         
-        // NUEVA FUNCION: RESET TOTAL
         window.resetCharacters = async () => {
-            if(confirm("¿ESTÁS SEGURO? Esto borrará a todos los héroes y enemigos del tablero.")) {
+            if(confirm("¿ESTÁS SEGURO? Esto borrará a todos los héroes y enemigos.")) {
                 await updateDoc(gameRef, { characters: [] });
             }
         };
