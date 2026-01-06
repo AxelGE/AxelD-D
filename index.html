@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Portal Gaming</title>
+    <title>Dungeon Portal Gaming - AI Master</title>
     <link rel="icon" href="dd.png">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -35,16 +35,13 @@
         /* --- LOGIN MODAL --- */
         #login-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,1);
-            z-index: 2000;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+            background: rgba(0,0,0,1); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .login-box {
             background: var(--bg-panel); border: 2px solid var(--accent);
             padding: 40px; text-align: center; border-radius: 10px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
-            max-width: 400px; width: 90%;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); max-width: 400px; width: 90%;
         }
         .login-box input { 
             width: 100%; font-size: 1.2rem; padding: 10px; margin: 20px 0; 
@@ -57,8 +54,10 @@
         }
         h1 { font-family: 'Cinzel', serif; color: var(--accent); margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
 
+        /* PANELES CON SCROLL */
         .panel { 
-            background: var(--bg-panel); padding: 15px; overflow-y: auto; 
+            background: var(--bg-panel); padding: 15px; 
+            overflow-y: auto; /* SCROLL HABILITADO */
             border-right: 1px solid #333; z-index: 5; height: 100%; box-sizing: border-box;
         }
         .panel-right { border-left: 1px solid #333; border-right: none; }
@@ -84,28 +83,14 @@
         }
         
         #map-container {
-            flex: 1; /* Ocupa todo el espacio disponible */
-            min-height: 0; /* Permite encogerse */
-            position: relative; 
-            background: #111;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            overflow: hidden;
+            flex: 1; min-height: 0; position: relative; background: #111;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
-        #map-img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; /* Se ajusta sin deformarse */
-            pointer-events: none; 
-        }
+        #map-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; transition: opacity 0.5s; }
 
         #chat-container {
-            flex: 0 0 300px; /* Altura fija para el chat */
-            border-top: 2px solid var(--accent); 
-            background: rgba(0,0,0,0.95);
-            display: flex; flex-direction: column; 
-            z-index: 10;
+            flex: 0 0 300px; border-top: 2px solid var(--accent); background: rgba(0,0,0,0.95);
+            display: flex; flex-direction: column; z-index: 10;
         }
         #chat-box { flex-grow: 1; overflow-y: auto; padding: 15px; font-size: 0.95rem; }
         .chat-input-area { display: flex; padding: 10px; gap: 5px; background: #1e1e24; }
@@ -113,14 +98,9 @@
         /* TOKENS & LAYERS */
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         
-        /* Cuadrícula (Grid) */
         #grid-layer {
-            background-image: 
-                linear-gradient(#555 1px, transparent 1px),
-                linear-gradient(90deg, #555 1px, transparent 1px);
-            background-size: 50px 50px; 
-            opacity: 0.3; 
-            display: none; /* Oculto por defecto */
+            background-image: linear-gradient(#555 1px, transparent 1px), linear-gradient(90deg, #555 1px, transparent 1px);
+            background-size: 50px 50px; opacity: 0.3; display: none;
         }
         #grid-layer.visible { display: block; }
 
@@ -163,7 +143,6 @@
         .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
         .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; }
 
-        /* MUSIC & DICE */
         #dice-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
             display: flex; justify-content: center; align-items: center; z-index: 999;
@@ -172,13 +151,8 @@
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
 
-        /* Estilo para el reproductor de música */
-        .music-container {
-            margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 5px; border-radius: 5px;
-        }
-        .music-links {
-            display: flex; gap: 5px; margin-bottom: 5px;
-        }
+        .music-container { margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 5px; border-radius: 5px; }
+        .music-links { display: flex; gap: 5px; margin-bottom: 5px; }
         .music-links button { font-size: 0.7rem; padding: 4px; }
 
         .guide-list { list-style: none; padding: 0; font-size: 0.85rem; color: #aaa; }
@@ -246,20 +220,20 @@
                 <option value="Orco">Orco</option>
                 <option value="Mago">Mago</option>
             </select>
-            <p style="font-size:0.7rem; color:#888;">*Se generarán stats aleatorios (FUE, DES, INT, PER, CAR)</p>
+            <p style="font-size:0.7rem; color:#888;">*Se generarán stats aleatorios</p>
             <button class="primary" onclick="createCharacter()" style="width:100%">Despertar Héroe</button>
         </div>
 
         <hr style="border-color: #333; margin: 20px 0;">
 
         <div>
-            <h4 style="color: var(--magic);">✨ Comandos para la IA</h4>
+            <h4 style="color: var(--magic);">✨ Comandos Mágicos IA</h4>
+            <p style="font-size:0.8rem;">La IA detectará lugares y enemigos:</p>
             <ul class="guide-list">
-                <li onclick="pasteCmd('Describe el entorno actual con detalle.')">👁️ "Describe el entorno..."</li>
-                <li onclick="pasteCmd('Genera un enemigo acorde al nivel.')">⚔️ "Genera un enemigo..."</li>
-                <li onclick="pasteCmd('Crea un NPC interesante aquí.')">👤 "Crea un NPC..."</li>
-                <li onclick="pasteCmd('¿Qué hay en este cofre?')">💰 "¿Qué hay en el cofre?"</li>
-                <li onclick="pasteCmd('Dame un acertijo para esta puerta.')">🧩 "Dame un acertijo..."</li>
+                <li onclick="pasteCmd('El grupo entra en una taberna ruidosa y oscura.')">🍺 "Vamos a una taberna..."</li>
+                <li onclick="pasteCmd('Viajamos a un bosque encantado con niebla.')">🌲 "Vamos a un bosque..."</li>
+                <li onclick="pasteCmd('Nos atacan 3 Goblins armados con dagas.')">⚔️ "Aparecen enemigos..."</li>
+                <li onclick="pasteCmd('Un Dragon Rojo desciende del cielo.')">🐉 "Aparece un Boss..."</li>
             </ul>
         </div>
 
@@ -267,8 +241,8 @@
 
         <div id="dm-tools">
             <h4>Herramientas de DM</h4>
-            <input type="text" id="map-url" placeholder="URL Mapa">
-            <button onclick="updateMap()" style="width:100%">Cargar Mapa</button>
+            <input type="text" id="map-url" placeholder="URL Mapa Manual">
+            <button onclick="updateMap()" style="width:100%">Cargar Mapa Manual</button>
             <button onclick="toggleGrid()" style="width:100%; border: 1px dashed #777;">📏 Mostrar/Ocultar Cuadrícula</button>
             <button class="danger" onclick="resetChat()" style="width:100%; margin-top:5px;">Limpiar Chat</button>
         </div>
@@ -284,7 +258,7 @@
         <div id="chat-container">
             <div id="chat-box"></div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Mensaje... (Enter para enviar)">
+                <input type="text" id="chat-input" placeholder="Escribe aquí... (La IA lee tus intenciones)">
                 <button class="primary" onclick="sendMessage()">Enviar</button>
                 <button onclick="askAIChat()" style="background: linear-gradient(45deg, #bd93f9, #8e44ad); border:none; color:white;">✨ IA</button>
             </div>
@@ -301,7 +275,7 @@
                 <button onclick="rollDice(10)">d10</button>
             </div>
         </div>
-        <h3 style="border-bottom: 1px solid #444;">Aventureros</h3>
+        <h3 style="border-bottom: 1px solid #444;">Personajes & Enemigos</h3>
         <div id="char-list"></div>
     </div>
 
@@ -319,7 +293,6 @@
             appId: "1:409663650732:web:4bf6681e14874039ffd809"
         };
 
-        // Bloque try-catch para manejar bloqueos
         let app, db, gameRef;
         try {
             app = initializeApp(firebaseConfig);
@@ -355,15 +328,12 @@
                 location.reload();
             }
         };
-        document.getElementById('login-name').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') window.login();
-        });
+        document.getElementById('login-name').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.login(); });
         checkLogin();
 
         // --- INIT ---
         async function initGame() {
             if (!gameRef) return;
-
             try {
                 const docSnap = await getDoc(gameRef);
                 if (!docSnap.exists()) {
@@ -372,29 +342,20 @@
                 onSnapshot(gameRef, (doc) => {
                     if(doc.exists()) {
                         gameState = doc.data();
-                        renderChat();
-                        renderList();
-                        renderMap();
-                        checkMusic(); // Comprobar si cambió la música
+                        renderChat(); renderList(); renderMap(); checkMusic();
                     }
                 });
-            } catch (e) {
-                console.error("Error iniciando:", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         // --- RENDERIZADO ---
         function renderChat() {
             const chatBox = document.getElementById('chat-box');
             const newHtml = gameState.chat.map(msg => `
-                <div class="msg ${msg.type || ''}">
-                    <strong>${msg.user}:</strong> ${msg.text}
-                </div>
+                <div class="msg ${msg.type || ''}"><strong>${msg.user}:</strong> ${msg.text}</div>
             `).join('');
-            
             if(chatBox.innerHTML !== newHtml) {
-                chatBox.innerHTML = newHtml;
-                chatBox.scrollTop = chatBox.scrollHeight;
+                chatBox.innerHTML = newHtml; chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
 
@@ -402,173 +363,117 @@
             const charList = document.getElementById('char-list');
             charList.innerHTML = gameState.characters.map((char, idx) => {
                 const hpPercent = (char.hp / char.maxHp) * 100;
-                const stats = char.stats || { str: '?', dex: '?', int: '?', per: '?', cha: '?' };
-
+                const stats = char.stats || { str: '?', dex: '?' };
                 return `
                     <div class="char-card" style="border-left-color: ${char.color || '#fff'}">
                         <div class="char-header">
                             <div><span class="char-name">${char.name}</span> <span class="char-meta">${char.race}</span></div>
                             <button class="danger" onclick="window.deleteCharacter('${char.name}')">💀</button>
                         </div>
-                        <div class="hp-container">
-                            <div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div>
-                            <div class="hp-text">${char.hp} / ${char.maxHp} HP</div>
+                        <div class="hp-container"><div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div><div class="hp-text">${char.hp} / ${char.maxHp} HP</div></div>
+                        <div class="stats-grid" style="font-size:0.7rem;">
+                            <div class="stat-box">FUE: ${stats.str}</div> <div class="stat-box">DES: ${stats.dex}</div> <div class="stat-box">INT: ${stats.int || '?'}</div>
                         </div>
-                        <div class="stats-grid">
-                            <div class="stat-box"><span class="stat-lbl">FUE</span><span class="stat-val">${stats.str}</span></div>
-                            <div class="stat-box"><span class="stat-lbl">DES</span><span class="stat-val">${stats.dex}</span></div>
-                            <div class="stat-box"><span class="stat-lbl">INT</span><span class="stat-val">${stats.int}</span></div>
-                            <div class="stat-box"><span class="stat-lbl">PER</span><span class="stat-val">${stats.per}</span></div>
-                            <div class="stat-box"><span class="stat-lbl">CAR</span><span class="stat-val">${stats.cha}</span></div>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin: 5px 0;">
+                        <div style="display:flex; justify-content:space-between; margin-top:5px;">
                             <button onclick="window.modHp('${char.name}', -1)">Herir</button>
                             <button onclick="window.modHp('${char.name}', 1)">Curar</button>
-                        </div>
-                        <ul style="padding:0; list-style:none;">
-                            ${(char.inventory || []).map((item, i) => `
-                                <li class="inv-item">• ${item} <button class="inv-btn-del" onclick="window.modInv('${char.name}', 'remove', ${i})">×</button></li>
-                            `).join('')}
-                        </ul>
-                        <div style="display:flex;">
-                            <input type="text" id="inv-in-${char.name}" placeholder="Item..." style="font-size:0.8rem; padding:2px;">
-                            <button onclick="window.modInv('${char.name}', 'add')">+</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        let isDragging = false;
-        let draggedCharName = null;
-
+        let isDragging = false; let draggedCharName = null;
         function renderMap() {
             if (isDragging) return; 
-
             if(gameState.mapUrl) document.getElementById('map-img').src = gameState.mapUrl;
             
             const tokenLayer = document.getElementById('token-layer');
             tokenLayer.innerHTML = ""; 
             
             gameState.characters.forEach(char => {
-                const x = char.x || 50;
-                const y = char.y || 50;
-                
+                const x = char.x || 50; const y = char.y || 50;
                 const token = document.createElement('div');
                 token.className = 'token';
-                token.style.left = x + '%';
-                token.style.top = y + '%';
+                token.style.left = x + '%'; token.style.top = y + '%';
                 token.style.backgroundColor = char.color || '#555';
                 token.innerText = char.name.substring(0, 2).toUpperCase();
-                
                 const label = document.createElement('div');
-                label.className = 'token-name';
-                label.innerText = char.name;
+                label.className = 'token-name'; label.innerText = char.name;
                 token.appendChild(label);
-
                 token.onmousedown = (e) => startDrag(e, char.name);
                 tokenLayer.appendChild(token);
             });
         }
 
-        function startDrag(e, charName) {
-            isDragging = true;
-            draggedCharName = charName;
-            e.preventDefault(); e.stopPropagation();
-        }
-
+        function startDrag(e, charName) { isDragging = true; draggedCharName = charName; e.preventDefault(); e.stopPropagation(); }
         const mapContainer = document.getElementById('map-container');
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             const rect = mapContainer.getBoundingClientRect();
             let x = ((e.clientX - rect.left) / rect.width) * 100;
             let y = ((e.clientY - rect.top) / rect.height) * 100;
-            x = Math.max(0, Math.min(100, x));
-            y = Math.max(0, Math.min(100, y));
-
+            x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
             const tokens = document.querySelectorAll('.token');
-            tokens.forEach(t => {
-                if(t.querySelector('.token-name').innerText === draggedCharName) {
-                    t.style.left = x + '%'; t.style.top = y + '%'; t.style.zIndex = 1000;
-                }
-            });
+            tokens.forEach(t => { if(t.innerText.includes(draggedCharName.substring(0, 2).toUpperCase())) { t.style.left = x + '%'; t.style.top = y + '%'; t.style.zIndex = 1000; } });
         });
-
         window.addEventListener('mouseup', async (e) => {
             if (!isDragging) return;
             const rect = mapContainer.getBoundingClientRect();
             let x = ((e.clientX - rect.left) / rect.width) * 100;
             let y = ((e.clientY - rect.top) / rect.height) * 100;
-            x = Math.max(0, Math.min(100, x));
-            y = Math.max(0, Math.min(100, y));
-
-            const chars = gameState.characters.map(c => {
-                if(c.name === draggedCharName) { c.x = x; c.y = y; }
-                return c;
-            });
+            x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
+            const chars = gameState.characters.map(c => { if(c.name === draggedCharName) { c.x = x; c.y = y; } return c; });
             isDragging = false; draggedCharName = null;
             await updateDoc(gameRef, { characters: chars });
         });
 
-        // --- SISTEMA DE MÚSICA (YOUTUBE) ---
+        // --- MÚSICA & AUDIO ---
         let currentMusicId = "";
-
         function checkMusic() {
             if (gameState.musicId && gameState.musicId !== currentMusicId) {
                 currentMusicId = gameState.musicId;
                 document.getElementById('music-player').src = `https://www.youtube.com/embed/${currentMusicId}?autoplay=1&loop=1&playlist=${currentMusicId}`;
             }
         }
-
-        // FUNCIÓN MEJORADA PARA EXTRAER ID DE YOUTUBE (Robust RegEx)
         function getYouTubeID(url) {
-            // Elimina espacios en blanco por si se copió mal
             url = url.trim();
-            // Regex capaz de leer youtu.be, embed, watch?v=, etc.
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]*)/);
             return (match && match[1].length === 11) ? match[1] : null;
         }
-
         window.setMusic = async () => {
             const url = document.getElementById('music-url-input').value;
             const videoId = getYouTubeID(url);
-            if (videoId) {
-                await updateDoc(gameRef, { musicId: videoId });
-            } else {
-                alert("Link de YouTube inválido. Asegúrate de copiar la URL completa.");
-            }
+            if (videoId) await updateDoc(gameRef, { musicId: videoId });
+            else alert("Link inválido.");
         };
+        window.quickMusic = async (url) => { const videoId = getYouTubeID(url); if(videoId) await updateDoc(gameRef, { musicId: videoId }); };
 
-        window.quickMusic = async (url) => {
-            const videoId = getYouTubeID(url);
-            if(videoId) await updateDoc(gameRef, { musicId: videoId });
+        // --- LÓGICA DE JUEGO & IA GENERATIVA ---
+        function getRandomColor(type = "player") {
+            const hue = type === "enemy" ? Math.floor(Math.random() * 60) + 330 : Math.floor(Math.random() * 360); // Enemigos Rojizos
+            return `hsl(${hue}, 70%, 40%)`;
+        }
+        function rollStat() { return Math.floor(Math.random() * 16) + 3; }
+
+        // Función base para crear personajes (usada por botón y por IA)
+        window.spawnCharacter = async (name, race, isEnemy = false) => {
+            if(gameState.characters.find(c => c.name === name)) name = name + " " + Math.floor(Math.random()*100);
+            
+            const hp = isEnemy ? Math.floor(Math.random() * 15) + 5 : 20;
+            const newChar = { 
+                name, race, hp, maxHp: hp, inventory: [], x: 50, y: 50, 
+                color: getRandomColor(isEnemy ? "enemy" : "player"), 
+                stats: { str: rollStat(), dex: rollStat(), int: rollStat(), per: rollStat(), cha: rollStat() }
+            };
+            await updateDoc(gameRef, { characters: arrayUnion(newChar) });
         };
-
-        // --- ACCIONES DE JUEGO ---
-        function getRandomColor() {
-            const hue = Math.floor(Math.random() * 360);
-            return `hsl(${hue}, 70%, 50%)`;
-        }
-
-        function rollStat() {
-            return Math.floor(Math.random() * 16) + 3;
-        }
 
         window.createCharacter = async () => {
             const name = document.getElementById('new-name').value.trim();
             const race = document.getElementById('new-race').value;
             if(!name) return;
-            let hp = 20; if(race === "Orco") hp = 28; if(race === "Enano") hp = 30; if(race === "Mago") hp = 14;
-            
-            const newChar = { 
-                name, race, hp, maxHp: hp, inventory: [], 
-                x: 50, y: 50, 
-                color: getRandomColor(), // COLOR UNICO
-                stats: { str: rollStat(), dex: rollStat(), int: rollStat(), per: rollStat(), cha: rollStat() }
-            };
-            
-            if(gameState.characters.find(c => c.name === name)) return alert("Nombre ocupado.");
-            await updateDoc(gameRef, { characters: arrayUnion(newChar) });
+            await window.spawnCharacter(name, race);
             document.getElementById('new-name').value = "";
         };
 
@@ -578,51 +483,22 @@
                 await updateDoc(gameRef, { characters: newChars });
             }
         };
-
         window.modHp = async (name, amount) => {
-            const chars = gameState.characters.map(c => {
-                if(c.name === name) c.hp = Math.min(c.maxHp, Math.max(0, c.hp + amount));
-                return c;
-            });
+            const chars = gameState.characters.map(c => { if(c.name === name) c.hp = Math.min(c.maxHp, Math.max(0, c.hp + amount)); return c; });
             await updateDoc(gameRef, { characters: chars });
         };
-
-        window.modInv = async (charName, action, payload) => {
-            const chars = gameState.characters.map(c => {
-                if(c.name === charName) {
-                    if(!c.inventory) c.inventory = [];
-                    if(action === 'add') {
-                        const input = document.getElementById(`inv-in-${charName}`);
-                        if(input.value) { c.inventory.push(input.value); input.value = ""; }
-                    } else if (action === 'remove') c.inventory.splice(payload, 1);
-                }
-                return c;
-            });
-            await updateDoc(gameRef, { characters: chars });
-        };
-
         window.rollDice = async (sides) => {
             const result = Math.floor(Math.random() * sides) + 1;
-            const overlay = document.getElementById('dice-overlay');
-            overlay.innerText = result; overlay.className = "active";
+            const overlay = document.getElementById('dice-overlay'); overlay.innerText = result; overlay.className = "active";
             setTimeout(() => overlay.className = "", 1500);
             await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `${localPlayer} tiró 1d${sides} ➔ ${result}`, type: "system" }) });
         };
-
-        window.updateMap = async () => {
-            const url = document.getElementById('map-url').value;
-            if(url) await updateDoc(gameRef, { mapUrl: url });
-        };
-        
-        window.toggleGrid = () => {
-            document.getElementById('grid-layer').classList.toggle('visible');
-        };
-
+        window.updateMap = async () => { const url = document.getElementById('map-url').value; if(url) await updateDoc(gameRef, { mapUrl: url }); };
+        window.toggleGrid = () => { document.getElementById('grid-layer').classList.toggle('visible'); };
         window.resetChat = async () => { if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] }); };
 
-        // --- CHAT & IA ---
+        // --- CEREBRO IA: NARRACIÓN + MAPAS + SPAWN DE ENEMIGOS ---
         document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-        
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -634,22 +510,68 @@
         window.askAIChat = async () => {
             const input = document.getElementById('chat-input');
             const query = input.value;
-            if(!query) return alert("Escribe una pregunta para la IA...");
-            input.value = "Consultando...";
-            
-            try {
-                const charContext = gameState.characters.map(c => 
-                    `${c.name} (${c.race}, FUE:${c.stats?.str}, INT:${c.stats?.int})`
-                ).join(', ');
+            if(!query) return alert("Escribe qué quieres que haga la IA...");
+            input.value = "La IA está tejiendo la realidad...";
 
-                const context = `Eres un DM de rol. Jugadores: ${charContext}. Usuario pregunta: ${query}. Responde corto y en español.`;
-                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(context)}`);
-                const text = await res.text();
-                await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: text, type: "ai" }) });
+            // Prompt avanzado para JSON
+            const systemPrompt = `
+            Eres un Dungeon Master. 
+            Responde SIEMPRE en formato JSON estricto sin texto adicional.
+            Tu misión es narrar y controlar el juego.
+            
+            Entrada del usuario: "${query}"
+            
+            Debes generar un JSON con esta estructura:
+            {
+                "narrative": "Tu narración de la historia aquí (máximo 200 caracteres)",
+                "new_map_prompt": "Si el usuario cambia de lugar (ej: bosque, taberna, cueva), escribe una descripción visual para generar una imagen (ej: 'dark dungeon lava top down'). Si no cambia el lugar, pon null.",
+                "spawn_enemies": [ 
+                    {"name": "Nombre", "race": "Raza"} 
+                ] 
+                (Si la narración implica que aparecen enemigos, agrégalos a la lista. Si no, deja la lista vacía [])
+            }
+            `;
+
+            try {
+                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}`);
+                let text = await res.text();
+                
+                // Limpieza básica por si la IA añade markdown
+                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                
+                const aiData = JSON.parse(text);
+
+                // 1. Narración al chat
+                if(aiData.narrative) {
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: aiData.narrative, type: "ai" }) });
+                }
+
+                // 2. Generación de Mapa Automática
+                if(aiData.new_map_prompt) {
+                    // Usamos seed aleatoria para que siempre varíe
+                    const randomSeed = Math.floor(Math.random() * 1000);
+                    const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${aiData.new_map_prompt} ${randomSeed}?width=1080&height=720&nologo=true`;
+                    await updateDoc(gameRef, { mapUrl: mapUrl });
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: "🌍 El escenario ha cambiado.", type: "system" }) });
+                }
+
+                // 3. Spawn de Enemigos
+                if(aiData.spawn_enemies && aiData.spawn_enemies.length > 0) {
+                    for(const enemy of aiData.spawn_enemies) {
+                        await window.spawnCharacter(enemy.name, enemy.race, true);
+                    }
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `⚠️ Han aparecido ${aiData.spawn_enemies.length} enemigos.`, type: "system" }) });
+                }
+
                 input.value = "";
+
             } catch(e) {
-                input.value = query;
-                alert("La IA falló (Error red)");
+                console.error(e);
+                // Fallback si la IA no devuelve JSON válido, solo responde texto plano
+                const fallbackRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent("Eres un DM. Responde brevemente a: " + query)}`);
+                const fallbackText = await fallbackRes.text();
+                await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: fallbackText, type: "ai" }) });
+                input.value = "";
             }
         };
 
