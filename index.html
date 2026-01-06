@@ -25,12 +25,12 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            height: 100vh; /* Ocupa toda la altura de la ventana */
+            height: 100vh;
             width: 100vw;
             display: grid;
-            grid-template-columns: 350px 1fr 300px; /* Izq | Centro | Der */
-            grid-template-rows: 60px 1fr; /* Header | Resto */
-            overflow: hidden; /* Evita barras de scroll en el body */
+            grid-template-columns: 350px 1fr 300px;
+            grid-template-rows: 60px 1fr;
+            overflow: hidden;
             user-select: none;
         }
 
@@ -64,17 +64,17 @@
         }
         h1 { font-family: 'Cinzel', serif; color: var(--accent); margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
 
-        /* General UI Elements */
+        /* Paneles Laterales */
         .panel { 
             background: var(--bg-panel); 
             padding: 15px; 
-            overflow-y: auto; /* Scroll interno si el panel es muy largo */
+            overflow-y: auto; 
             border-right: 1px solid #333; 
             z-index: 5; 
-            height: 100%; /* Asegura que llene su celda del grid */
+            height: 100%;
             box-sizing: border-box;
         }
-        .panel-right { border-left: 1px solid #333; border-right: none; border-right: none; }
+        .panel-right { border-left: 1px solid #333; border-right: none; }
         
         button {
             background: #333; color: var(--text-main); border: 1px solid #555;
@@ -93,21 +93,21 @@
             border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 5px; font-family: inherit;
         }
 
-        /* --- CORRECCIÓN DE LAYOUT CENTRAL (MAPA + CHAT) --- */
+        /* --- LAYOUT CENTRAL (MAPA + CHAT) --- */
         .main-area {
-            grid-column: 2; /* Columna central explícita */
-            grid-row: 2;    /* Fila de contenido */
+            grid-column: 2;
+            grid-row: 2;
             display: flex; 
             flex-direction: column; 
             background: #000; 
             position: relative;
-            height: 100%;   /* Llenar exactamente el espacio disponible */
-            overflow: hidden; /* Importante: nada se sale de aquí */
+            height: 100%;
+            overflow: hidden;
         }
         
         #map-container {
-            flex: 1; /* Ocupa TODO el espacio sobrante */
-            min-height: 0; /* CRUCIAL: Permite que el flex se encoja si es necesario */
+            flex: 1; /* Ocupa el espacio sobrante */
+            min-height: 0;
             position: relative; 
             background: #111;
             display: flex; 
@@ -117,19 +117,13 @@
         }
         
         #map-img { 
-            max-width: 100%; 
-            max-height: 100%; 
-            width: auto;
-            height: auto;
-            object-fit: contain; /* Asegura que la imagen siempre se vea entera sin deformarse */
-            pointer-events: none; 
+            max-width: 100%; max-height: 100%; width: auto; height: auto;
+            object-fit: contain; pointer-events: none; 
         }
 
         /* Chat siempre visible */
         #chat-container {
-            /* Altura fija o porcentaje seguro */
-            flex: 0 0 300px; /* Fija la altura del chat en 300px, no crece ni se encoge */
-            /* Si prefieres porcentaje, usa: flex: 0 0 35%; */
+            flex: 0 0 300px; /* Altura fija */
             border-top: 2px solid var(--accent); 
             background: rgba(0,0,0,0.95);
             display: flex; 
@@ -167,9 +161,10 @@
 
         .msg { margin-bottom: 8px; line-height: 1.4; word-wrap: break-word; }
         .msg strong { color: var(--accent); font-family: 'Cinzel', serif; }
-        .msg.gemini { border-left: 3px solid #00d2ff; padding-left: 10px; color: #d0f0ff; background: rgba(0, 210, 255, 0.05); }
+        .msg.ai { border-left: 3px solid #bd93f9; padding-left: 10px; color: #e0d0ff; background: rgba(189, 147, 249, 0.05); }
         .msg.system { color: #f1c40f; font-style: italic; text-align: center; font-size: 0.85em; opacity: 0.8; }
 
+        /* Elementos de Personaje y DM */
         .char-card {
             background: #2a2a2e; border: 1px solid #444; padding: 10px; margin-bottom: 15px;
             border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
@@ -200,20 +195,12 @@
         .dm-section h4 { margin-top: 0; color: var(--magic); border-bottom: 1px solid #444; padding-bottom: 5px;}
         #ai-result-area { width: 100%; height: 100px; font-size: 0.8rem; margin-top: 5px; resize: vertical; }
 
-        /* Media Queries para Móvil */
         @media (max-width: 800px) {
-            body { 
-                grid-template-columns: 1fr; 
-                grid-template-rows: 60px auto 1fr auto; /* Ajuste para móvil */
-                overflow-y: scroll; /* Scroll en móvil */
-            }
+            body { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr auto; overflow-y: scroll; }
             .panel { height: auto; max-height: 300px; }
-            .main-area { 
-                grid-column: 1; 
-                height: 60vh; /* Altura fija en móvil para el mapa/chat */
-            }
+            .main-area { grid-column: 1; height: 60vh; }
             #map-container { min-height: 200px; }
-            #chat-container { flex: 0 0 200px; } /* Chat más pequeño en móvil */
+            #chat-container { flex: 0 0 200px; }
         }
     </style>
 </head>
@@ -284,7 +271,7 @@
                     <button class="magic" onclick="generateAI('story')" style="flex:1;">Historia</button>
                     <button class="magic" onclick="generateAI('loot')" style="flex:1;">Loot</button>
                 </div>
-                <textarea id="ai-result-area" placeholder="Los resultados de la IA aparecerán aquí..."></textarea>
+                <textarea id="ai-result-area" placeholder="Resultados de la IA..."></textarea>
                 <button onclick="sendAIToChat()" style="width:100%;">Enviar al Chat</button>
             </div>
 
@@ -302,9 +289,9 @@
         <div id="chat-container">
             <div id="chat-box"></div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Comandos: /r 20, /dmg nombre 5, /heal nombre 5">
+                <input type="text" id="chat-input" placeholder="Escribe aquí... (Enter para enviar)">
                 <button class="primary" onclick="sendMessage()">Enviar</button>
-                <button onclick="askGeminiChat()" style="background: linear-gradient(45deg, #00d2ff, #3a7bd5); border:none; color:white;">✨ IA</button>
+                <button onclick="askAIChat()" style="background: linear-gradient(45deg, #bd93f9, #8e44ad); border:none; color:white;">✨ IA</button>
             </div>
         </div>
     </div>
@@ -332,7 +319,7 @@
         from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         // ==========================================
-        // CONFIGURACIÓN
+        // CONFIGURACIÓN FIREBASE
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBx_002WWXTyiKT_rrlyaAW0JtHoIiSpTE",
@@ -342,8 +329,7 @@
             messagingSenderId: "409663650732",
             appId: "1:409663650732:web:4bf6681e14874039ffd809"
         };
-        // TU CLAVE DE API ACTUALIZADA
-        const GEMINI_API_KEY = "AIzaSyAo-7VpBV6XtRuA041hLlX6q6K-gZhUqo4"; 
+        // ¡YA NO SE NECESITA API KEY DE GOOGLE PARA LA IA!
         // ==========================================
 
         const app = initializeApp(firebaseConfig);
@@ -353,7 +339,7 @@
         let gameState = { chat: [], characters: [], mapUrl: "" };
         let localPlayer = localStorage.getItem("dnd_player") || null;
 
-        // SISTEMA DE LOGIN Y SESION
+        // LOGIN SYSTEM
         function checkLogin() {
             if (localPlayer) {
                 document.getElementById('login-modal').style.display = 'none';
@@ -366,7 +352,6 @@
         window.login = () => {
             const name = document.getElementById('login-name').value.trim();
             if(!name) return alert("Por favor ingresa un nombre");
-            
             localPlayer = name;
             localStorage.setItem("dnd_player", name);
             checkLogin();
@@ -379,9 +364,15 @@
             }
         };
 
+        // ESCUCHAR TECLA ENTER EN EL CHAT
+        document.getElementById('chat-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
         checkLogin();
 
-        // INICIALIZACIÓN
         async function initGame() {
             const docSnap = await getDoc(gameRef);
             if (!docSnap.exists()) {
@@ -391,7 +382,6 @@
                     mapUrl: "https://images.unsplash.com/photo-1642436733644-8a1a30d5254c"
                 });
             }
-            
             onSnapshot(gameRef, (doc) => {
                 if(doc.exists()) {
                     gameState = doc.data();
@@ -400,12 +390,9 @@
             });
         }
 
-        // RENDERIZADO UI
         function renderUI() {
-            // Mapa
             if(gameState.mapUrl) document.getElementById('map-img').src = gameState.mapUrl;
 
-            // Chat
             const chatBox = document.getElementById('chat-box');
             chatBox.innerHTML = gameState.chat.map(msg => `
                 <div class="msg ${msg.type}">
@@ -414,7 +401,6 @@
             `).join('');
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Personajes y Tokens
             const charList = document.getElementById('char-list');
             const tokenLayer = document.getElementById('token-layer');
             charList.innerHTML = "";
@@ -441,17 +427,14 @@
                             </div>
                             <button class="danger" onclick="window.deleteCharacter('${char.name}')" style="font-size:0.8rem; padding: 2px 6px;">💀</button>
                         </div>
-                        
                         <div class="hp-container">
                             <div class="hp-bar" style="width:${hpPercent}%; background:${hpColor}"></div>
                             <div class="hp-text">${char.hp} / ${char.maxHp} HP</div>
                         </div>
-                        
                         <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
                             <button onclick="window.modHp('${char.name}', -1)">Herir</button>
                             <button onclick="window.modHp('${char.name}', 1)">Curar</button>
                         </div>
-
                         <div class="inv-section">
                             <span class="inv-title">🎒 Inventario</span>
                             <ul class="inv-list">${invHtml}</ul>
@@ -464,54 +447,43 @@
                 `;
                 charList.innerHTML += html;
 
-                // Token en Mapa
+                // Token Mapa
                 const x = char.x || 50;
                 const y = char.y || 50;
-                
                 const token = document.createElement('div');
                 token.className = 'token';
                 token.style.left = x + '%';
                 token.style.top = y + '%';
                 token.style.backgroundColor = hpColor;
                 token.innerText = char.name.substring(0, 2).toUpperCase();
-                
                 const label = document.createElement('div');
                 label.className = 'token-name';
                 label.innerText = char.name;
                 token.appendChild(label);
-
                 token.onmousedown = (e) => startDrag(e, char.name);
-
                 tokenLayer.appendChild(token);
             });
         }
 
-        // ==========================================
-        // LOGICA DE ARRASTRE DE TOKENS MEJORADA
-        // ==========================================
+        // DRAG LOGIC
         let isDragging = false;
         let draggedCharName = null;
 
         function startDrag(e, charName) {
             isDragging = true;
             draggedCharName = charName;
-            e.preventDefault(); // Evita selección
+            e.preventDefault();
         }
 
         const mapContainer = document.getElementById('map-container');
-        
-        // Usamos 'window' para no perder el token si el mouse sale rápido del div
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-            
             const rect = mapContainer.getBoundingClientRect();
             let x = ((e.clientX - rect.left) / rect.width) * 100;
             let y = ((e.clientY - rect.top) / rect.height) * 100;
-
             x = Math.max(0, Math.min(100, x));
             y = Math.max(0, Math.min(100, y));
 
-            // Actualización visual inmediata
             const tokens = document.querySelectorAll('.token');
             tokens.forEach(t => {
                 if(t.innerText.includes(draggedCharName.substring(0, 2).toUpperCase())) {
@@ -523,11 +495,9 @@
 
         window.addEventListener('mouseup', async (e) => {
             if (!isDragging) return;
-            
             const rect = mapContainer.getBoundingClientRect();
             let x = ((e.clientX - rect.left) / rect.width) * 100;
             let y = ((e.clientY - rect.top) / rect.height) * 100;
-
             x = Math.max(0, Math.min(100, x));
             y = Math.max(0, Math.min(100, y));
             
@@ -538,34 +508,22 @@
                 }
                 return c;
             });
-            
             isDragging = false;
             draggedCharName = null;
-            
             await updateDoc(gameRef, { characters: chars });
         });
 
-        // ==========================================
-        // FUNCIONES DE JUEGO
-        // ==========================================
+        // GAME FUNCTIONS
         window.createCharacter = async () => {
             const name = document.getElementById('new-name').value.trim();
             const race = document.getElementById('new-race').value;
             if(!name) return alert("¡Tu héroe necesita un nombre!");
-
             let hp = 20;
             if(race === "Orco") hp = 28;
             if(race === "Enano") hp = 30;
             if(race === "Mago") hp = 14;
-
-            const newChar = { 
-                name, race, hp, maxHp: hp, 
-                inventory: ["Ración", "Antorcha"],
-                x: 50, y: 50 
-            };
-            
+            const newChar = { name, race, hp, maxHp: hp, inventory: ["Ración", "Antorcha"], x: 50, y: 50 };
             if(gameState.characters.find(c => c.name === name)) return alert("Ese nombre ya existe.");
-
             await updateDoc(gameRef, { characters: arrayUnion(newChar) });
             document.getElementById('new-name').value = "";
         };
@@ -591,10 +549,7 @@
                     if(!c.inventory) c.inventory = [];
                     if(action === 'add') {
                         const input = document.getElementById(`inv-in-${charName}`);
-                        if(input.value) {
-                            c.inventory.push(input.value);
-                            input.value = "";
-                        }
+                        if(input.value) { c.inventory.push(input.value); input.value = ""; }
                     } else if (action === 'remove') {
                         c.inventory.splice(payload, 1);
                     }
@@ -610,16 +565,13 @@
             overlay.innerText = result;
             overlay.className = "active";
             setTimeout(() => overlay.className = "", 1500);
-
             const user = localPlayer || "Anónimo";
             await updateDoc(gameRef, {
                 chat: arrayUnion({ user: "Sistema", text: `${user} tiró 1d${sides} ➔ ${result}`, type: "system" })
             });
         };
 
-        // ==========================================
-        // MAPAS Y VISUALES
-        // ==========================================
+        // VISUALS
         window.selectPresetMap = () => {
             const select = document.getElementById('map-preset');
             if(select.value) document.getElementById('map-url').value = select.value;
@@ -636,13 +588,10 @@
         };
 
         window.toggleGrid = () => {
-            const grid = document.getElementById('grid-layer');
-            grid.classList.toggle('visible');
+            document.getElementById('grid-layer').classList.toggle('visible');
         };
 
-        // ==========================================
-        // CHAT, COMANDOS E IA (CORREGIDO)
-        // ==========================================
+        // CHAT
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -663,15 +612,12 @@
         async function processCommand(cmd) {
             const parts = cmd.split(' ');
             const action = parts[0].toLowerCase();
-
             if (action === '/clear') {
                 if(confirm("¿Borrar todo?")) await updateDoc(gameRef, { chat: [] });
-            } 
-            else if (action === '/r' || action === '/roll') {
+            } else if (action === '/r' || action === '/roll') {
                 const sides = parseInt(parts[1]) || 20;
                 await window.rollDice(sides);
-            }
-            else if (action === '/dmg' || action === '/heal') {
+            } else if (action === '/dmg' || action === '/heal') {
                 const name = parts[1];
                 let amount = parseInt(parts[2]);
                 if (!name || isNaN(amount)) return alert("Uso: /dmg [Nombre] [Cantidad]");
@@ -681,51 +627,40 @@
                     chat: arrayUnion({ user: "Sistema", text: `${name} recibió ${amount} HP`, type: "system" })
                 });
             }
-            else {
-                alert("Comando desconocido. Usa /r, /dmg, /heal, /clear");
-            }
         }
 
         window.resetChat = async () => {
-            if(confirm("¿Borrar toda la historia del chat?")) {
-                await updateDoc(gameRef, { chat: [] });
-            }
+            if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] });
         };
 
-        // IA Functions - VERSION CORREGIDA
-        async function callGeminiAPI(prompt) {
+        // ==========================================
+        // NUEVA FUNCIÓN DE IA GRATUITA (SIN KEY)
+        // Usando Pollinations.ai Text API
+        // ==========================================
+        async function callFreeAI(prompt) {
             try {
-                // Usamos gemini-1.5-flash que es el modelo estándar actual
-                const MODEL_NAME = "gemini-1.5-flash"; 
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
+                // Esta URL es una API pública y gratuita
+                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
                 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    console.error("Detalles del error Gemini:", data);
-                    return `Error API (${response.status}): ${data.error?.message}`;
-                }
+                if (!response.ok) throw new Error("La IA está durmiendo (Error de conexión)");
                 
-                return data.candidates[0].content.parts[0].text;
+                const text = await response.text();
+                return text;
             } catch(e) {
                 console.error(e);
-                return `Error de conexión IA: ${e.message}`;
+                return "La magia arcana falló. Intenta de nuevo.";
             }
         }
 
         window.generateAI = async (type) => {
             const textArea = document.getElementById('ai-result-area');
-            textArea.value = "Pensando...";
+            textArea.value = "Invocando sabiduría...";
             let prompt = "";
-            if (type === 'npc') prompt = "Genera 3 NPCs breves para D&D (Nombre, Raza, Clase, un rasgo distintivo) en español.";
-            if (type === 'story') prompt = "Genera 3 ganchos de aventura breves para D&D.";
-            if (type === 'loot') prompt = "Genera 5 objetos de botín interesantes.";
-            const result = await callGeminiAPI(prompt);
+            if (type === 'npc') prompt = "Genera 3 NPCs breves para D&D (Nombre, Raza, Clase, Rasgo) en español.";
+            if (type === 'story') prompt = "Genera 3 ganchos de aventura breves para D&D fantasía en español.";
+            if (type === 'loot') prompt = "Genera 5 objetos de botín interesantes para D&D en español.";
+            
+            const result = await callFreeAI(prompt);
             textArea.value = result;
         };
 
@@ -733,19 +668,23 @@
             const text = document.getElementById('ai-result-area').value;
             if(!text) return;
             await updateDoc(gameRef, {
-                chat: arrayUnion({ user: "Gemini DM", text: text, type: "gemini" })
+                chat: arrayUnion({ user: "AI Dungeon Master", text: text, type: "ai" })
             });
         };
 
-        window.askGeminiChat = async () => {
+        window.askAIChat = async () => {
             const input = document.getElementById('chat-input');
             const query = input.value;
-            if(!query) return alert("Escribe algo para preguntar a la IA...");
-            input.value = "Consultando...";
-            const context = `Eres un DM auxiliar. Estado del juego: ${JSON.stringify(gameState.characters)}. Pregunta del usuario: ${query}. Responde brevemente.`;
-            const result = await callGeminiAPI(context);
+            if(!query) return alert("Pregúntale algo a la IA...");
+            
+            input.value = "Consultando el oráculo...";
+            
+            const context = `Eres un DM de D&D. Estado actual del grupo: ${JSON.stringify(gameState.characters)}. Pregunta del usuario: ${query}. Responde breve y en español.`;
+            
+            const result = await callFreeAI(context);
+            
             await updateDoc(gameRef, {
-                chat: arrayUnion({ user: "Gemini", text: result, type: "gemini" })
+                chat: arrayUnion({ user: "AI Guide", text: result, type: "ai" })
             });
             input.value = "";
         };
