@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Portal Axel</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2072/2072130.png">
+    <title>Dungeon Portal Gaming</title>
+    <link rel="icon" href="dd.png">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #121212;
             --bg-panel: #1e1e24;
             --accent: #d4af37;
-            --accent-hover: #f9d76e;
             --text-main: #e0e0e0;
             --text-muted: #a0a0a0;
             --danger: #cf6679;
-            --success: #03dac6;
             --magic: #bd93f9;
         }
 
@@ -34,10 +32,10 @@
             user-select: none;
         }
 
-        /* LOGIN MODAL */
+        /* --- LOGIN MODAL (Siempre visible al inicio) --- */
         #login-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
+            background: rgba(0,0,0,1); /* Fondo sólido para tapar todo */
             z-index: 2000;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
@@ -45,161 +43,109 @@
         .login-box {
             background: var(--bg-panel); border: 2px solid var(--accent);
             padding: 40px; text-align: center; border-radius: 10px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
             max-width: 400px; width: 90%;
         }
-        .login-box h2 { font-family: 'Cinzel', serif; color: var(--accent); margin-top: 0; }
-        .login-box input { width: 100%; font-size: 1.2rem; padding: 10px; margin: 20px 0; }
+        .login-box input { 
+            width: 100%; font-size: 1.2rem; padding: 10px; margin: 20px 0; 
+            text-align: center; background: #333; color: white; border: 1px solid #555;
+        }
 
-        /* Header */
         header {
-            grid-column: 1 / -1;
-            background: #000;
-            border-bottom: 2px solid var(--accent);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            justify-content: space-between;
-            z-index: 10;
+            grid-column: 1 / -1; background: #000; border-bottom: 2px solid var(--accent);
+            display: flex; align-items: center; padding: 0 20px; justify-content: space-between; z-index: 10;
         }
         h1 { font-family: 'Cinzel', serif; color: var(--accent); margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
 
-        /* Paneles Laterales */
         .panel { 
-            background: var(--bg-panel); 
-            padding: 15px; 
-            overflow-y: auto; 
-            border-right: 1px solid #333; 
-            z-index: 5; 
-            height: 100%;
-            box-sizing: border-box;
+            background: var(--bg-panel); padding: 15px; overflow-y: auto; 
+            border-right: 1px solid #333; z-index: 5; height: 100%; box-sizing: border-box;
         }
         .panel-right { border-left: 1px solid #333; border-right: none; }
         
         button {
             background: #333; color: var(--text-main); border: 1px solid #555;
-            padding: 8px 12px; cursor: pointer; border-radius: 4px; transition: 0.2s;
-            margin-bottom: 5px;
+            padding: 8px 12px; cursor: pointer; border-radius: 4px; transition: 0.2s; margin-bottom: 5px;
         }
         button:hover { background: #444; border-color: var(--text-main); }
         button.primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
-        button.primary:hover { background: var(--accent-hover); }
         button.danger { background: var(--danger); color: #fff; border: none; }
         button.magic { background: var(--magic); color: #000; font-weight: bold; border: none; }
-        button.magic:hover { background: #d6b3ff; }
-        
+
         input, select, textarea {
             background: #2b2b2b; border: 1px solid #444; color: white; padding: 8px;
-            border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 5px; font-family: inherit;
+            border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 5px;
         }
 
-        /* --- LAYOUT CENTRAL (MAPA + CHAT) --- */
+        /* --- MAP & CHAT LAYOUT --- */
         .main-area {
-            grid-column: 2;
-            grid-row: 2;
-            display: flex; 
-            flex-direction: column; 
-            background: #000; 
-            position: relative;
-            height: 100%;
-            overflow: hidden;
+            grid-column: 2; grid-row: 2; display: flex; flex-direction: column; 
+            background: #000; position: relative; height: 100%; overflow: hidden;
         }
         
         #map-container {
-            flex: 1; /* Ocupa el espacio sobrante */
-            min-height: 0;
-            position: relative; 
-            background: #111;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            overflow: hidden;
+            flex: 1; min-height: 0; position: relative; background: #111;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
-        
-        #map-img { 
-            max-width: 100%; max-height: 100%; width: auto; height: auto;
-            object-fit: contain; pointer-events: none; 
-        }
+        #map-img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
 
-        /* Chat siempre visible */
         #chat-container {
-            flex: 0 0 300px; /* Altura fija */
-            border-top: 2px solid var(--accent); 
-            background: rgba(0,0,0,0.95);
-            display: flex; 
-            flex-direction: column; 
-            z-index: 10;
+            flex: 0 0 300px; border-top: 2px solid var(--accent); background: rgba(0,0,0,0.95);
+            display: flex; flex-direction: column; z-index: 10;
         }
-
         #chat-box { flex-grow: 1; overflow-y: auto; padding: 15px; font-size: 0.95rem; }
         .chat-input-area { display: flex; padding: 10px; gap: 5px; background: #1e1e24; }
         
-        /* Capas y Tokens */
+        /* TOKENS */
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-
-        #grid-layer {
-            background-image: 
-                linear-gradient(#555 1px, transparent 1px),
-                linear-gradient(90deg, #555 1px, transparent 1px);
-            background-size: 50px 50px; opacity: 0.3; display: none;
-        }
-        #grid-layer.visible { display: block; }
-
         .token {
             width: 45px; height: 45px; border-radius: 50%; position: absolute;
             transform: translate(-50%, -50%); pointer-events: auto; cursor: grab;
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; font-family: 'Cinzel', serif; color: white;
             text-shadow: 0 0 4px black; box-shadow: 0 0 10px rgba(0,0,0,0.8);
-            border: 3px solid white; transition: top 0.05s, left 0.05s; z-index: 100;
+            border: 2px solid white; transition: top 0.1s, left 0.1s; z-index: 100;
         }
-        .token:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); z-index: 101; }
+        .token:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); z-index: 101; transition: none; }
         .token-name {
             position: absolute; top: -20px; background: rgba(0,0,0,0.7); 
             padding: 2px 5px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; pointer-events: none;
         }
 
+        /* MESSAGES & CARDS */
         .msg { margin-bottom: 8px; line-height: 1.4; word-wrap: break-word; }
         .msg strong { color: var(--accent); font-family: 'Cinzel', serif; }
         .msg.ai { border-left: 3px solid #bd93f9; padding-left: 10px; color: #e0d0ff; background: rgba(189, 147, 249, 0.05); }
         .msg.system { color: #f1c40f; font-style: italic; text-align: center; font-size: 0.85em; opacity: 0.8; }
 
-        /* Elementos de Personaje y DM */
         .char-card {
             background: #2a2a2e; border: 1px solid #444; padding: 10px; margin-bottom: 15px;
-            border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border-left: 5px solid transparent;
         }
-        .char-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .char-name { font-family: 'Cinzel', serif; font-size: 1.1rem; color: #fff; }
-        .char-meta { font-size: 0.8rem; color: var(--text-muted); }
-        
         .hp-container { height: 12px; background: #444; border-radius: 6px; overflow: hidden; margin: 8px 0; position: relative; }
         .hp-bar { height: 100%; transition: width 0.3s ease; }
         .hp-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 10px; line-height: 12px; text-shadow: 1px 1px 2px #000; }
         
-        .inv-section { margin-top: 10px; padding-top: 5px; border-top: 1px dashed #444; }
-        .inv-list { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; }
-        .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; }
-        .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; font-weight: bold; }
+        .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
+        .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; }
 
+        /* DICE & IA HELPERS */
         #dice-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
             display: flex; justify-content: center; align-items: center; z-index: 999;
-            font-size: 8rem; font-family: 'Cinzel', serif; color: #fff;
-            text-shadow: 0 0 30px var(--accent), 0 0 10px #000;
+            font-size: 8rem; font-family: 'Cinzel', serif; color: #fff; text-shadow: 0 0 30px var(--accent);
             opacity: 0; transition: opacity 0.5s, transform 0.5s; transform: scale(0.5);
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
 
-        .dm-section { border: 1px solid #444; padding: 10px; border-radius: 5px; margin-bottom: 15px; background: rgba(0,0,0,0.2); }
-        .dm-section h4 { margin-top: 0; color: var(--magic); border-bottom: 1px solid #444; padding-bottom: 5px;}
-        #ai-result-area { width: 100%; height: 100px; font-size: 0.8rem; margin-top: 5px; resize: vertical; }
+        .guide-list { list-style: none; padding: 0; font-size: 0.85rem; color: #aaa; }
+        .guide-list li { margin-bottom: 6px; border-bottom: 1px solid #333; padding-bottom: 4px; cursor: pointer; }
+        .guide-list li:hover { color: var(--magic); }
 
         @media (max-width: 800px) {
             body { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr auto; overflow-y: scroll; }
-            .panel { height: auto; max-height: 300px; }
+            .panel { max-height: 300px; }
             .main-area { grid-column: 1; height: 60vh; }
-            #map-container { min-height: 200px; }
             #chat-container { flex: 0 0 200px; }
         }
     </style>
@@ -208,18 +154,18 @@
 
     <div id="login-modal">
         <div class="login-box">
-            <h1>🐉</h1>
+            <h1><img src="dd.png" width="40px"> </h1>
             <h2>Dungeon Portal</h2>
-            <p>Identifícate, viajero.</p>
-            <input type="text" id="login-name" placeholder="Tu Nombre de Jugador">
-            <button class="primary" onclick="login()" style="width:100%; font-size:1.1rem; padding: 15px;">ENTRAR</button>
+            <p>Introduce tu nombre de aventurero para esta sesión.</p>
+            <input type="text" id="login-name" placeholder="Nombre..." autocomplete="off">
+            <button class="primary" onclick="login()" style="width:100%; font-size:1.1rem; padding: 15px;">ENTRAR AL MUNDO</button>
         </div>
     </div>
 
     <div id="dice-overlay">20</div>
 
     <header>
-        <h1><img src="https://cdn-icons-png.flaticon.com/512/2072/2072130.png" width="40px"> Dungeon Portal</h1>
+        <h1><img src="dd.png" width="40px"> Dungeon Portal</h1>
         <div style="font-size: 0.9rem;">
             👤 <span id="current-player-display" style="color: var(--accent);">...</span>
             <button onclick="logout()" style="font-size:0.7rem; padding: 2px 5px; margin-left: 10px;">Salir</button>
@@ -227,69 +173,54 @@
     </header>
 
     <div class="panel">
-        <h3 style="color: var(--accent);">Panel de Control</h3>
+        <h3 style="color: var(--accent);">Grimorio</h3>
         
         <div id="creation-zone">
             <h4>Crear Nuevo Héroe</h4>
             <input type="text" id="new-name" placeholder="Nombre del Héroe">
             <select id="new-race">
-                <option value="Humano">Humano (Versátil)</option>
-                <option value="Elfo">Elfo (Ágil)</option>
-                <option value="Enano">Enano (Resistente)</option>
-                <option value="Orco">Orco (Fuerte)</option>
-                <option value="Mago">Mago (Inteligente)</option>
+                <option value="Humano">Humano</option>
+                <option value="Elfo">Elfo</option>
+                <option value="Enano">Enano</option>
+                <option value="Orco">Orco</option>
+                <option value="Mago">Mago</option>
             </select>
             <button class="primary" onclick="createCharacter()" style="width:100%">Despertar Héroe</button>
         </div>
 
         <hr style="border-color: #333; margin: 20px 0;">
 
+        <div>
+            <h4 style="color: var(--magic);">✨ Comandos para la IA</h4>
+            <ul class="guide-list">
+                <li onclick="pasteCmd('Describe el entorno actual con detalle.')">👁️ "Describe el entorno..."</li>
+                <li onclick="pasteCmd('Genera un enemigo acorde al nivel.')">⚔️ "Genera un enemigo..."</li>
+                <li onclick="pasteCmd('Crea un NPC interesante aquí.')">👤 "Crea un NPC..."</li>
+                <li onclick="pasteCmd('¿Qué hay en este cofre?')">💰 "¿Qué hay en el cofre?"</li>
+                <li onclick="pasteCmd('Dame un acertijo para esta puerta.')">🧩 "Dame un acertijo..."</li>
+            </ul>
+        </div>
+
+        <hr style="border-color: #333; margin: 20px 0;">
+
         <div id="dm-tools">
-            <h3 style="color: var(--magic);">🛠️ Herramientas de DM</h3>
-            
-            <div class="dm-section">
-                <h4>🗺️ Control de Mapa</h4>
-                <select id="map-preset" onchange="selectPresetMap()">
-                    <option value="">-- Mapas Predefinidos --</option>
-                    <option value="https://images.unsplash.com/photo-1575881875475-31023242e3f9?auto=format&fit=crop&w=1200&q=80">Bosque Misterioso</option>
-                    <option value="https://images.unsplash.com/photo-1596716075151-54c30b20166d?auto=format&fit=crop&w=1200&q=80">Mazmorra de Piedra</option>
-                    <option value="https://images.unsplash.com/photo-1516934024742-b461fba47600?auto=format&fit=crop&w=1200&q=80">Taberna Oscura</option>
-                    <option value="https://i.pinimg.com/originals/a1/38/54/a13854966e3df6a152dfce12e0f54070.jpg">Mapa de Mundo</option>
-                </select>
-                <input type="text" id="map-url" placeholder="O pega URL personalizada...">
-                <div style="display:flex; gap:5px; margin-bottom: 5px;">
-                    <button onclick="updateMap()" style="flex:1;">Cargar URL</button>
-                    <button onclick="searchMaps()" style="flex:1; background:#444;">🔎 Buscar</button>
-                </div>
-                <button onclick="toggleGrid()" style="width:100%; border: 1px dashed #777;">📏 Mostrar/Ocultar Cuadrícula</button>
-            </div>
-
-            <div class="dm-section">
-                <h4>🤖 Zona Creativa IA</h4>
-                <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <button class="magic" onclick="generateAI('npc')" style="flex:1;">NPC</button>
-                    <button class="magic" onclick="generateAI('story')" style="flex:1;">Historia</button>
-                    <button class="magic" onclick="generateAI('loot')" style="flex:1;">Loot</button>
-                </div>
-                <textarea id="ai-result-area" placeholder="Resultados de la IA..."></textarea>
-                <button onclick="sendAIToChat()" style="width:100%;">Enviar al Chat</button>
-            </div>
-
-            <button class="danger" onclick="resetChat()" style="width:100%">🗑️ Resetear Chat</button>
+            <h4>Herramientas de DM</h4>
+            <input type="text" id="map-url" placeholder="URL Mapa">
+            <button onclick="updateMap()" style="width:100%">Cargar Mapa</button>
+            <button class="danger" onclick="resetChat()" style="width:100%">Limpiar Chat</button>
         </div>
     </div>
 
     <div class="main-area">
         <div id="map-container">
             <img id="map-img" src="https://images.unsplash.com/photo-1642436733644-8a1a30d5254c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" alt="Mapa del Juego">
-            <div id="grid-layer" class="layer"></div>
             <div id="token-layer" class="layer"></div>
         </div>
         
         <div id="chat-container">
             <div id="chat-box"></div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Escribe aquí... (Enter para enviar)">
+                <input type="text" id="chat-input" placeholder="Mensaje... (Enter para enviar)">
                 <button class="primary" onclick="sendMessage()">Enviar</button>
                 <button onclick="askAIChat()" style="background: linear-gradient(45deg, #bd93f9, #8e44ad); border:none; color:white;">✨ IA</button>
             </div>
@@ -298,9 +229,7 @@
 
     <div class="panel panel-right">
         <div style="text-align: center; margin-bottom: 20px;">
-            <button onclick="rollDice(20)" class="primary" style="font-size: 1.2rem; padding: 15px 30px; width: 100%;">
-                🎲 D20
-            </button>
+            <button onclick="rollDice(20)" class="primary" style="font-size: 1.2rem; padding: 15px 30px; width: 100%;">🎲 D20</button>
             <div style="margin-top: 5px; display: flex; gap: 5px; justify-content: center;">
                 <button onclick="rollDice(4)">d4</button>
                 <button onclick="rollDice(6)">d6</button>
@@ -308,8 +237,7 @@
                 <button onclick="rollDice(10)">d10</button>
             </div>
         </div>
-
-        <h3 style="border-bottom: 1px solid #444; padding-bottom: 5px;">Grupo de Aventureros</h3>
+        <h3 style="border-bottom: 1px solid #444;">Aventureros</h3>
         <div id="char-list"></div>
     </div>
 
@@ -318,9 +246,6 @@
         import { getFirestore, doc, onSnapshot, updateDoc, setDoc, arrayUnion, getDoc } 
         from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        // ==========================================
-        // CONFIGURACIÓN FIREBASE
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBx_002WWXTyiKT_rrlyaAW0JtHoIiSpTE",
             authDomain: "dungeon-party-ai.firebaseapp.com",
@@ -329,17 +254,18 @@
             messagingSenderId: "409663650732",
             appId: "1:409663650732:web:4bf6681e14874039ffd809"
         };
-        // ¡YA NO SE NECESITA API KEY DE GOOGLE PARA LA IA!
-        // ==========================================
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const gameRef = doc(db, "games", "partida_main");
 
         let gameState = { chat: [], characters: [], mapUrl: "" };
-        let localPlayer = localStorage.getItem("dnd_player") || null;
+        
+        // --- SESIÓN ÚNICA POR PESTAÑA (sessionStorage) ---
+        // Al usar sessionStorage en lugar de localStorage, cada pestaña es un usuario diferente.
+        let localPlayer = sessionStorage.getItem("dnd_player") || null;
 
-        // LOGIN SYSTEM
+        // --- AUTH ---
         function checkLogin() {
             if (localPlayer) {
                 document.getElementById('login-modal').style.display = 'none';
@@ -348,134 +274,133 @@
                 document.getElementById('login-modal').style.display = 'flex';
             }
         }
-
+        
         window.login = () => {
             const name = document.getElementById('login-name').value.trim();
-            if(!name) return alert("Por favor ingresa un nombre");
+            if(!name) return;
             localPlayer = name;
-            localStorage.setItem("dnd_player", name);
+            // Guardamos en la sesión actual (se borra al cerrar pestaña)
+            sessionStorage.setItem("dnd_player", name);
             checkLogin();
         };
 
         window.logout = () => {
-            if(confirm("¿Cerrar sesión?")) {
-                localStorage.removeItem("dnd_player");
+            if(confirm("¿Salir de la sesión?")) {
+                sessionStorage.removeItem("dnd_player");
                 location.reload();
             }
         };
 
-        // ESCUCHAR TECLA ENTER EN EL CHAT
-        document.getElementById('chat-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+        // Soporte Enter en Login
+        document.getElementById('login-name').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') window.login();
         });
 
         checkLogin();
 
+        // --- INIT ---
         async function initGame() {
             const docSnap = await getDoc(gameRef);
             if (!docSnap.exists()) {
-                await setDoc(gameRef, {
-                    chat: [{user: "Sistema", text: "La sesión ha comenzado.", type: "system"}],
-                    characters: [],
-                    mapUrl: "https://images.unsplash.com/photo-1642436733644-8a1a30d5254c"
-                });
+                await setDoc(gameRef, { chat: [], characters: [], mapUrl: "" });
             }
             onSnapshot(gameRef, (doc) => {
                 if(doc.exists()) {
                     gameState = doc.data();
-                    renderUI();
+                    renderChat();
+                    renderList();
+                    renderMap(); 
                 }
             });
         }
 
-        function renderUI() {
-            if(gameState.mapUrl) document.getElementById('map-img').src = gameState.mapUrl;
-
+        // --- RENDERIZADO ---
+        function renderChat() {
             const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML = gameState.chat.map(msg => `
-                <div class="msg ${msg.type}">
+            const newHtml = gameState.chat.map(msg => `
+                <div class="msg ${msg.type || ''}">
                     <strong>${msg.user}:</strong> ${msg.text}
                 </div>
             `).join('');
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            const charList = document.getElementById('char-list');
-            const tokenLayer = document.getElementById('token-layer');
-            charList.innerHTML = "";
-            tokenLayer.innerHTML = ""; 
             
-            gameState.characters.forEach(char => {
-                const hpPercent = (char.hp / char.maxHp) * 100;
-                let hpColor = hpPercent > 50 ? '#03dac6' : (hpPercent > 25 ? '#f1c40f' : '#cf6679');
-                
-                // Lista Lateral
-                const invHtml = (char.inventory || []).map((item, idx) => `
-                    <li class="inv-item">
-                        <span>• ${item}</span>
-                        <button class="inv-btn-del" onclick="window.modInv('${char.name}', 'remove', ${idx})">×</button>
-                    </li>
-                `).join('');
+            if(chatBox.innerHTML !== newHtml) {
+                chatBox.innerHTML = newHtml;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
 
-                const html = `
-                    <div class="char-card">
+        function renderList() {
+            const charList = document.getElementById('char-list');
+            charList.innerHTML = gameState.characters.map((char, idx) => {
+                const hpPercent = (char.hp / char.maxHp) * 100;
+                return `
+                    <div class="char-card" style="border-left-color: ${char.color || '#fff'}">
                         <div class="char-header">
-                            <div>
-                                <span class="char-name">${char.name}</span>
-                                <div class="char-meta">${char.race}</div>
-                            </div>
-                            <button class="danger" onclick="window.deleteCharacter('${char.name}')" style="font-size:0.8rem; padding: 2px 6px;">💀</button>
+                            <div><span class="char-name">${char.name}</span> <span class="char-meta">${char.race}</span></div>
+                            <button class="danger" onclick="window.deleteCharacter('${char.name}')">💀</button>
                         </div>
                         <div class="hp-container">
-                            <div class="hp-bar" style="width:${hpPercent}%; background:${hpColor}"></div>
+                            <div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div>
                             <div class="hp-text">${char.hp} / ${char.maxHp} HP</div>
                         </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <div style="display:flex; justify-content:space-between; margin: 5px 0;">
                             <button onclick="window.modHp('${char.name}', -1)">Herir</button>
                             <button onclick="window.modHp('${char.name}', 1)">Curar</button>
                         </div>
-                        <div class="inv-section">
-                            <span class="inv-title">🎒 Inventario</span>
-                            <ul class="inv-list">${invHtml}</ul>
-                            <div style="display:flex; margin-top:5px;">
-                                <input type="text" id="inv-in-${char.name}" placeholder="Item..." style="font-size:0.8rem; padding:4px;">
-                                <button onclick="window.modInv('${char.name}', 'add')" style="padding:2px 8px;">+</button>
-                            </div>
+                        <ul style="padding:0; list-style:none;">
+                            ${(char.inventory || []).map((item, i) => `
+                                <li class="inv-item">• ${item} <button class="inv-btn-del" onclick="window.modInv('${char.name}', 'remove', ${i})">×</button></li>
+                            `).join('')}
+                        </ul>
+                        <div style="display:flex;">
+                            <input type="text" id="inv-in-${char.name}" placeholder="Item..." style="font-size:0.8rem; padding:2px;">
+                            <button onclick="window.modInv('${char.name}', 'add')">+</button>
                         </div>
                     </div>
                 `;
-                charList.innerHTML += html;
+            }).join('');
+        }
 
-                // Token Mapa
+        let isDragging = false;
+        let draggedCharName = null;
+
+        function renderMap() {
+            if (isDragging) return; // No tocar si se está moviendo
+
+            if(gameState.mapUrl) document.getElementById('map-img').src = gameState.mapUrl;
+            
+            const tokenLayer = document.getElementById('token-layer');
+            tokenLayer.innerHTML = ""; 
+            
+            gameState.characters.forEach(char => {
                 const x = char.x || 50;
                 const y = char.y || 50;
+                
                 const token = document.createElement('div');
                 token.className = 'token';
                 token.style.left = x + '%';
                 token.style.top = y + '%';
-                token.style.backgroundColor = hpColor;
+                token.style.backgroundColor = char.color || '#555'; // Color único
                 token.innerText = char.name.substring(0, 2).toUpperCase();
+                
                 const label = document.createElement('div');
                 label.className = 'token-name';
                 label.innerText = char.name;
                 token.appendChild(label);
+
                 token.onmousedown = (e) => startDrag(e, char.name);
                 tokenLayer.appendChild(token);
             });
         }
 
-        // DRAG LOGIC
-        let isDragging = false;
-        let draggedCharName = null;
-
         function startDrag(e, charName) {
             isDragging = true;
             draggedCharName = charName;
-            e.preventDefault();
+            e.preventDefault(); e.stopPropagation();
         }
 
         const mapContainer = document.getElementById('map-container');
+        
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             const rect = mapContainer.getBoundingClientRect();
@@ -486,9 +411,8 @@
 
             const tokens = document.querySelectorAll('.token');
             tokens.forEach(t => {
-                if(t.innerText.includes(draggedCharName.substring(0, 2).toUpperCase())) {
-                   t.style.left = x + '%';
-                   t.style.top = y + '%'; 
+                if(t.querySelector('.token-name').innerText === draggedCharName) {
+                    t.style.left = x + '%'; t.style.top = y + '%'; t.style.zIndex = 1000;
                 }
             });
         });
@@ -500,30 +424,34 @@
             let y = ((e.clientY - rect.top) / rect.height) * 100;
             x = Math.max(0, Math.min(100, x));
             y = Math.max(0, Math.min(100, y));
-            
+
             const chars = gameState.characters.map(c => {
-                if(c.name === draggedCharName) {
-                    c.x = x;
-                    c.y = y;
-                }
+                if(c.name === draggedCharName) { c.x = x; c.y = y; }
                 return c;
             });
-            isDragging = false;
-            draggedCharName = null;
+            isDragging = false; draggedCharName = null;
             await updateDoc(gameRef, { characters: chars });
         });
 
-        // GAME FUNCTIONS
+        // --- ACCIONES ---
+        function getRandomColor() {
+            const colors = ['#e74c3c', '#8e44ad', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#2ecc71', '#c0392b'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
         window.createCharacter = async () => {
             const name = document.getElementById('new-name').value.trim();
             const race = document.getElementById('new-race').value;
-            if(!name) return alert("¡Tu héroe necesita un nombre!");
-            let hp = 20;
-            if(race === "Orco") hp = 28;
-            if(race === "Enano") hp = 30;
-            if(race === "Mago") hp = 14;
-            const newChar = { name, race, hp, maxHp: hp, inventory: ["Ración", "Antorcha"], x: 50, y: 50 };
-            if(gameState.characters.find(c => c.name === name)) return alert("Ese nombre ya existe.");
+            if(!name) return;
+            let hp = 20; if(race === "Orco") hp = 28; if(race === "Enano") hp = 30; if(race === "Mago") hp = 14;
+            
+            const newChar = { 
+                name, race, hp, maxHp: hp, inventory: [], 
+                x: 50, y: 50, 
+                color: getRandomColor() // Asigna color permanente
+            };
+            
+            if(gameState.characters.find(c => c.name === name)) return alert("Nombre ocupado.");
             await updateDoc(gameRef, { characters: arrayUnion(newChar) });
             document.getElementById('new-name').value = "";
         };
@@ -550,9 +478,7 @@
                     if(action === 'add') {
                         const input = document.getElementById(`inv-in-${charName}`);
                         if(input.value) { c.inventory.push(input.value); input.value = ""; }
-                    } else if (action === 'remove') {
-                        c.inventory.splice(payload, 1);
-                    }
+                    } else if (action === 'remove') c.inventory.splice(payload, 1);
                 }
                 return c;
             });
@@ -562,132 +488,48 @@
         window.rollDice = async (sides) => {
             const result = Math.floor(Math.random() * sides) + 1;
             const overlay = document.getElementById('dice-overlay');
-            overlay.innerText = result;
-            overlay.className = "active";
+            overlay.innerText = result; overlay.className = "active";
             setTimeout(() => overlay.className = "", 1500);
-            const user = localPlayer || "Anónimo";
-            await updateDoc(gameRef, {
-                chat: arrayUnion({ user: "Sistema", text: `${user} tiró 1d${sides} ➔ ${result}`, type: "system" })
-            });
-        };
-
-        // VISUALS
-        window.selectPresetMap = () => {
-            const select = document.getElementById('map-preset');
-            if(select.value) document.getElementById('map-url').value = select.value;
-        };
-
-        window.searchMaps = () => {
-            const query = "dnd battle map fantasy top down";
-            window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`, '_blank');
+            await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `${localPlayer} tiró 1d${sides} ➔ ${result}`, type: "system" }) });
         };
 
         window.updateMap = async () => {
             const url = document.getElementById('map-url').value;
             if(url) await updateDoc(gameRef, { mapUrl: url });
         };
+        
+        window.resetChat = async () => { if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] }); };
 
-        window.toggleGrid = () => {
-            document.getElementById('grid-layer').classList.toggle('visible');
-        };
-
-        // CHAT
+        // --- CHAT & IA ---
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
             if(!text) return;
-
-            if(text.startsWith('/')) {
-                await processCommand(text);
-                input.value = "";
-                return;
-            }
-
-            await updateDoc(gameRef, {
-                chat: arrayUnion({ user: localPlayer || "Espectador", text: text, type: "player" })
-            });
+            await updateDoc(gameRef, { chat: arrayUnion({ user: localPlayer, text: text }) });
             input.value = "";
-        };
-
-        async function processCommand(cmd) {
-            const parts = cmd.split(' ');
-            const action = parts[0].toLowerCase();
-            if (action === '/clear') {
-                if(confirm("¿Borrar todo?")) await updateDoc(gameRef, { chat: [] });
-            } else if (action === '/r' || action === '/roll') {
-                const sides = parseInt(parts[1]) || 20;
-                await window.rollDice(sides);
-            } else if (action === '/dmg' || action === '/heal') {
-                const name = parts[1];
-                let amount = parseInt(parts[2]);
-                if (!name || isNaN(amount)) return alert("Uso: /dmg [Nombre] [Cantidad]");
-                if (action === '/dmg') amount = -amount;
-                await window.modHp(name, amount);
-                await updateDoc(gameRef, {
-                    chat: arrayUnion({ user: "Sistema", text: `${name} recibió ${amount} HP`, type: "system" })
-                });
-            }
-        }
-
-        window.resetChat = async () => {
-            if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] });
-        };
-
-        // ==========================================
-        // NUEVA FUNCIÓN DE IA GRATUITA (SIN KEY)
-        // Usando Pollinations.ai Text API
-        // ==========================================
-        async function callFreeAI(prompt) {
-            try {
-                // Esta URL es una API pública y gratuita
-                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
-                
-                if (!response.ok) throw new Error("La IA está durmiendo (Error de conexión)");
-                
-                const text = await response.text();
-                return text;
-            } catch(e) {
-                console.error(e);
-                return "La magia arcana falló. Intenta de nuevo.";
-            }
-        }
-
-        window.generateAI = async (type) => {
-            const textArea = document.getElementById('ai-result-area');
-            textArea.value = "Invocando sabiduría...";
-            let prompt = "";
-            if (type === 'npc') prompt = "Genera 3 NPCs breves para D&D (Nombre, Raza, Clase, Rasgo) en español.";
-            if (type === 'story') prompt = "Genera 3 ganchos de aventura breves para D&D fantasía en español.";
-            if (type === 'loot') prompt = "Genera 5 objetos de botín interesantes para D&D en español.";
-            
-            const result = await callFreeAI(prompt);
-            textArea.value = result;
-        };
-
-        window.sendAIToChat = async () => {
-            const text = document.getElementById('ai-result-area').value;
-            if(!text) return;
-            await updateDoc(gameRef, {
-                chat: arrayUnion({ user: "AI Dungeon Master", text: text, type: "ai" })
-            });
         };
 
         window.askAIChat = async () => {
             const input = document.getElementById('chat-input');
             const query = input.value;
-            if(!query) return alert("Pregúntale algo a la IA...");
+            if(!query) return alert("Escribe una pregunta para la IA...");
+            input.value = "Consultando...";
             
-            input.value = "Consultando el oráculo...";
-            
-            const context = `Eres un DM de D&D. Estado actual del grupo: ${JSON.stringify(gameState.characters)}. Pregunta del usuario: ${query}. Responde breve y en español.`;
-            
-            const result = await callFreeAI(context);
-            
-            await updateDoc(gameRef, {
-                chat: arrayUnion({ user: "AI Guide", text: result, type: "ai" })
-            });
-            input.value = "";
+            try {
+                const context = `Eres un DM de rol. Jugadores: ${gameState.characters.map(c=>c.name).join(', ')}. Usuario pregunta: ${query}. Responde corto y en español.`;
+                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(context)}`);
+                const text = await res.text();
+                await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: text, type: "ai" }) });
+                input.value = "";
+            } catch(e) {
+                input.value = query;
+                alert("La IA falló (Error red)");
+            }
         };
+
+        window.pasteCmd = (text) => { document.getElementById('chat-input').value = text; };
 
         initGame();
     </script>
