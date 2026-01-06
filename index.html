@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dungeon Portal Gaming</title>
-    <link rel="icon" href="dd.png">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2072/2072130.png">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -163,7 +163,7 @@
 
     <div id="login-modal">
         <div class="login-box">
-            <h1><center></center><img src="dd.png" width="150px"></h1></cenmter>
+            <h1><img src="dd.png" width="120px"></h1>
             <h2>Dungeon Portal</h2>
             <p>Introduce tu nombre de aventurero para esta sesión.</p>
             <input type="text" id="login-name" placeholder="Nombre..." autocomplete="off">
@@ -265,9 +265,16 @@
             appId: "1:409663650732:web:4bf6681e14874039ffd809"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const gameRef = doc(db, "games", "partida_main");
+        // Bloque try-catch para manejar bloqueos de AdBlock/Extensiones
+        let app, db, gameRef;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            gameRef = doc(db, "games", "partida_main");
+        } catch (e) {
+            console.error("Error al conectar con Firebase. Puede ser un AdBlocker.", e);
+            alert("⚠️ Error de Conexión: Parece que un bloqueador de anuncios (AdBlock) está impidiendo la conexión al juego. Por favor, desactívalo para esta página y recarga.");
+        }
 
         let gameState = { chat: [], characters: [], mapUrl: "" };
         let localPlayer = sessionStorage.getItem("dnd_player") || null;
@@ -301,18 +308,30 @@
 
         // --- INIT ---
         async function initGame() {
-            const docSnap = await getDoc(gameRef);
-            if (!docSnap.exists()) {
-                await setDoc(gameRef, { chat: [], characters: [], mapUrl: "" });
-            }
-            onSnapshot(gameRef, (doc) => {
-                if(doc.exists()) {
-                    gameState = doc.data();
-                    renderChat();
-                    renderList();
-                    renderMap(); 
+            if (!gameRef) return; // Si falló la conexión, no hacemos nada
+
+            try {
+                const docSnap = await getDoc(gameRef);
+                if (!docSnap.exists()) {
+                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "" });
                 }
-            });
+                onSnapshot(gameRef, (doc) => {
+                    if(doc.exists()) {
+                        gameState = doc.data();
+                        renderChat();
+                        renderList();
+                        renderMap(); 
+                    }
+                }, (error) => {
+                    console.error("Error en tiempo real:", error);
+                    // Si es un error de permisos o bloqueado por cliente
+                    if (error.code === 'permission-denied' || error.message.includes('BLOCKED')) {
+                        alert("Conexión bloqueada. Revisa tu antivirus o extensiones de navegador.");
+                    }
+                });
+            } catch (e) {
+                console.error("Error iniciando juego:", e);
+            }
         }
 
         // --- RENDERIZADO ---
@@ -335,7 +354,6 @@
             charList.innerHTML = gameState.characters.map((char, idx) => {
                 const hpPercent = (char.hp / char.maxHp) * 100;
                 
-                // Si el personaje es antiguo y no tiene stats, mostramos '??'
                 const stats = char.stats || { str: '?', dex: '?', int: '?', per: '?', cha: '?' };
 
                 return `
@@ -455,9 +473,7 @@
             return colors[Math.floor(Math.random() * colors.length)];
         }
 
-        // GENERADOR DE STATS
         function rollStat() {
-            // Genera un número entre 3 y 18 (aprox. 3d6)
             return Math.floor(Math.random() * 16) + 3;
         }
 
@@ -471,7 +487,6 @@
                 name, race, hp, maxHp: hp, inventory: [], 
                 x: 50, y: 50, 
                 color: getRandomColor(),
-                // GENERACION DE STATS AQUI
                 stats: {
                     str: rollStat(),
                     dex: rollStat(),
@@ -548,7 +563,6 @@
             input.value = "Consultando...";
             
             try {
-                // Incluimos las stats en el contexto de la IA para que pueda usarlas
                 const charContext = gameState.characters.map(c => 
                     `${c.name} (${c.race}, FUE:${c.stats?.str}, INT:${c.stats?.int})`
                 ).join(', ');
