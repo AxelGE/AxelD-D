@@ -32,7 +32,7 @@
             user-select: none;
         }
 
-        /* --- UI COMPONENTS --- */
+        /* --- LOGIN MODAL --- */
         #login-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,1);
@@ -126,7 +126,6 @@
         .hp-bar { height: 100%; transition: width 0.3s ease; }
         .hp-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 10px; line-height: 12px; text-shadow: 1px 1px 2px #000; }
         
-        /* ESTILOS NUEVOS PARA ESTADISTICAS */
         .stats-grid {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
             margin: 8px 0; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;
@@ -138,7 +137,7 @@
         .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
         .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; }
 
-        /* DICE & IA HELPERS */
+        /* MUSIC & DICE */
         #dice-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
             display: flex; justify-content: center; align-items: center; z-index: 999;
@@ -146,6 +145,15 @@
             opacity: 0; transition: opacity 0.5s, transform 0.5s; transform: scale(0.5);
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
+
+        /* Estilo para el reproductor de música */
+        .music-container {
+            margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 5px; border-radius: 5px;
+        }
+        .music-links {
+            display: flex; gap: 5px; margin-bottom: 5px;
+        }
+        .music-links button { font-size: 0.7rem; padding: 4px; }
 
         .guide-list { list-style: none; padding: 0; font-size: 0.85rem; color: #aaa; }
         .guide-list li { margin-bottom: 6px; border-bottom: 1px solid #333; padding-bottom: 4px; cursor: pointer; }
@@ -182,6 +190,24 @@
     </header>
 
     <div class="panel">
+        
+        <h3 style="color: #1DB954;">🎵 Ambiente Musical</h3>
+        <div class="music-container">
+            <iframe id="music-player" width="100%" height="150" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            
+            <div id="dm-music-controls" style="margin-top:5px;">
+                <input type="text" id="music-url-input" placeholder="Pega URL de YouTube aquí">
+                <button class="primary" onclick="setMusic()" style="width:100%">▶️ Poner para Todos</button>
+                <div class="music-links">
+                    <button onclick="quickMusic('https://www.youtube.com/watch?v=Prq4v7tXNQA')">⚔️ Batalla</button>
+                    <button onclick="quickMusic('https://www.youtube.com/watch?v=x4kCa_YyWp0')">🍺 Taberna</button>
+                    <button onclick="quickMusic('https://www.youtube.com/watch?v=NbH1059K2Eo')">🌲 Bosque</button>
+                </div>
+            </div>
+        </div>
+
+        <hr style="border-color: #333; margin: 20px 0;">
+
         <h3 style="color: var(--accent);">Grimorio</h3>
         
         <div id="creation-zone">
@@ -265,18 +291,18 @@
             appId: "1:409663650732:web:4bf6681e14874039ffd809"
         };
 
-        // Bloque try-catch para manejar bloqueos de AdBlock/Extensiones
+        // Bloque try-catch para manejar bloqueos
         let app, db, gameRef;
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             gameRef = doc(db, "games", "partida_main");
         } catch (e) {
-            console.error("Error al conectar con Firebase. Puede ser un AdBlocker.", e);
-            alert("⚠️ Error de Conexión: Parece que un bloqueador de anuncios (AdBlock) está impidiendo la conexión al juego. Por favor, desactívalo para esta página y recarga.");
+            console.error(e);
+            alert("Error de conexión. Desactiva AdBlock.");
         }
 
-        let gameState = { chat: [], characters: [], mapUrl: "" };
+        let gameState = { chat: [], characters: [], mapUrl: "", musicId: "" };
         let localPlayer = sessionStorage.getItem("dnd_player") || null;
 
         // --- AUTH ---
@@ -308,29 +334,24 @@
 
         // --- INIT ---
         async function initGame() {
-            if (!gameRef) return; // Si falló la conexión, no hacemos nada
+            if (!gameRef) return;
 
             try {
                 const docSnap = await getDoc(gameRef);
                 if (!docSnap.exists()) {
-                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "" });
+                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "", musicId: "" });
                 }
                 onSnapshot(gameRef, (doc) => {
                     if(doc.exists()) {
                         gameState = doc.data();
                         renderChat();
                         renderList();
-                        renderMap(); 
-                    }
-                }, (error) => {
-                    console.error("Error en tiempo real:", error);
-                    // Si es un error de permisos o bloqueado por cliente
-                    if (error.code === 'permission-denied' || error.message.includes('BLOCKED')) {
-                        alert("Conexión bloqueada. Revisa tu antivirus o extensiones de navegador.");
+                        renderMap();
+                        checkMusic(); // Comprobar si cambió la música
                     }
                 });
             } catch (e) {
-                console.error("Error iniciando juego:", e);
+                console.error("Error iniciando:", e);
             }
         }
 
@@ -353,7 +374,6 @@
             const charList = document.getElementById('char-list');
             charList.innerHTML = gameState.characters.map((char, idx) => {
                 const hpPercent = (char.hp / char.maxHp) * 100;
-                
                 const stats = char.stats || { str: '?', dex: '?', int: '?', per: '?', cha: '?' };
 
                 return `
@@ -362,12 +382,10 @@
                             <div><span class="char-name">${char.name}</span> <span class="char-meta">${char.race}</span></div>
                             <button class="danger" onclick="window.deleteCharacter('${char.name}')">💀</button>
                         </div>
-                        
                         <div class="hp-container">
                             <div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div>
                             <div class="hp-text">${char.hp} / ${char.maxHp} HP</div>
                         </div>
-
                         <div class="stats-grid">
                             <div class="stat-box"><span class="stat-lbl">FUE</span><span class="stat-val">${stats.str}</span></div>
                             <div class="stat-box"><span class="stat-lbl">DES</span><span class="stat-val">${stats.dex}</span></div>
@@ -375,12 +393,10 @@
                             <div class="stat-box"><span class="stat-lbl">PER</span><span class="stat-val">${stats.per}</span></div>
                             <div class="stat-box"><span class="stat-lbl">CAR</span><span class="stat-val">${stats.cha}</span></div>
                         </div>
-
                         <div style="display:flex; justify-content:space-between; margin: 5px 0;">
                             <button onclick="window.modHp('${char.name}', -1)">Herir</button>
                             <button onclick="window.modHp('${char.name}', 1)">Curar</button>
                         </div>
-                        
                         <ul style="padding:0; list-style:none;">
                             ${(char.inventory || []).map((item, i) => `
                                 <li class="inv-item">• ${item} <button class="inv-btn-del" onclick="window.modInv('${char.name}', 'remove', ${i})">×</button></li>
@@ -434,7 +450,6 @@
         }
 
         const mapContainer = document.getElementById('map-container');
-        
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             const rect = mapContainer.getBoundingClientRect();
@@ -467,10 +482,44 @@
             await updateDoc(gameRef, { characters: chars });
         });
 
-        // --- ACCIONES ---
+        // --- SISTEMA DE MÚSICA (YOUTUBE) ---
+        let currentMusicId = "";
+
+        function checkMusic() {
+            // Si la música en DB es diferente a la actual, la actualizamos
+            if (gameState.musicId && gameState.musicId !== currentMusicId) {
+                currentMusicId = gameState.musicId;
+                document.getElementById('music-player').src = `https://www.youtube.com/embed/${currentMusicId}?autoplay=1&loop=1&playlist=${currentMusicId}`;
+            }
+        }
+
+        // Extraer ID de YouTube de cualquier link
+        function getYouTubeID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        window.setMusic = async () => {
+            const url = document.getElementById('music-url-input').value;
+            const videoId = getYouTubeID(url);
+            if (videoId) {
+                await updateDoc(gameRef, { musicId: videoId });
+            } else {
+                alert("Link de YouTube inválido.");
+            }
+        };
+
+        window.quickMusic = async (url) => {
+            const videoId = getYouTubeID(url);
+            if(videoId) await updateDoc(gameRef, { musicId: videoId });
+        };
+
+        // --- ACCIONES DE JUEGO ---
         function getRandomColor() {
-            const colors = ['#e74c3c', '#8e44ad', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#2ecc71', '#c0392b'];
-            return colors[Math.floor(Math.random() * colors.length)];
+            // Generador HSL Aleatorio para colores vivos y únicos
+            const hue = Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 70%, 50%)`;
         }
 
         function rollStat() {
@@ -486,14 +535,8 @@
             const newChar = { 
                 name, race, hp, maxHp: hp, inventory: [], 
                 x: 50, y: 50, 
-                color: getRandomColor(),
-                stats: {
-                    str: rollStat(),
-                    dex: rollStat(),
-                    int: rollStat(),
-                    per: rollStat(),
-                    cha: rollStat()
-                }
+                color: getRandomColor(), // COLOR UNICO
+                stats: { str: rollStat(), dex: rollStat(), int: rollStat(), per: rollStat(), cha: rollStat() }
             };
             
             if(gameState.characters.find(c => c.name === name)) return alert("Nombre ocupado.");
