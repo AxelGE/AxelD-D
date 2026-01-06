@@ -26,7 +26,8 @@
             height: 100vh;
             width: 100vw;
             display: grid;
-            grid-template-columns: 350px 1fr 300px;
+            /* CAMBIO: Panel izquierdo más ancho (400px) para ver mejor YouTube */
+            grid-template-columns: 400px 1fr 300px;
             grid-template-rows: 60px 1fr;
             overflow: hidden;
             user-select: none;
@@ -91,7 +92,7 @@
         }
         #map-img { 
             width: 100%; height: 100%; 
-            object-fit: contain; /* Estira la imagen respetando proporciones */
+            object-fit: contain; 
             pointer-events: none; transition: opacity 0.5s;
         }
 
@@ -159,7 +160,7 @@
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
 
-        /* REPRODUCTOR MÚSICA GRANDE */
+        /* REPRODUCTOR MÚSICA */
         .music-container { margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 5px; border-radius: 5px; }
         .music-links { display: flex; gap: 5px; margin-bottom: 5px; }
         .music-links button { font-size: 0.7rem; padding: 4px; }
@@ -217,6 +218,17 @@
 
         <hr style="border-color: #333; margin: 20px 0;">
 
+        <div id="dm-tools">
+            <h4>Herramientas de DM</h4>
+            <input type="text" id="map-url" placeholder="URL Mapa Manual">
+            <button onclick="updateMap()" style="width:100%">Cargar Mapa Manual</button>
+            <button onclick="toggleGrid()" style="width:100%; border: 1px dashed #777;">📏 Mostrar/Ocultar Cuadrícula</button>
+            <button class="danger" onclick="resetChat()" style="width:100%; margin-top:5px;">Limpiar Chat</button>
+            <button class="danger" onclick="resetCharacters()" style="width:100%; margin-top:5px; border: 1px solid #f00;">☠️ Borrar Todos los PJs</button>
+        </div>
+
+        <hr style="border-color: #333; margin: 20px 0;">
+
         <h3 style="color: var(--accent);">Grimorio</h3>
         
         <div id="creation-zone">
@@ -236,24 +248,13 @@
         <hr style="border-color: #333; margin: 20px 0;">
 
         <div>
-            <h4 style="color: var(--magic);">✨ Comandos IA (Automáticos)</h4>
-            <p style="font-size:0.8rem; color:#aaa;">Escribe esto en el chat y pulsa "✨ IA"</p>
+            <h4 style="color: var(--magic);">✨ Comandos Mágicos IA</h4>
             <ul class="guide-list">
                 <li onclick="pasteCmd('El grupo viaja a una mazmorra llena de lava.')">🌋 "Ir a mazmorra de lava..."</li>
                 <li onclick="pasteCmd('Entramos en una biblioteca antigua y polvorienta.')">📚 "Ir a biblioteca..."</li>
                 <li onclick="pasteCmd('Aparecen 3 Esqueletos guerreros.')">💀 "Aparecen 3 Esqueletos..."</li>
                 <li onclick="pasteCmd('Un Dragon Rojo gigante aterriza frente a nosotros.')">🐉 "Aparece un Dragon..."</li>
             </ul>
-        </div>
-
-        <hr style="border-color: #333; margin: 20px 0;">
-
-        <div id="dm-tools">
-            <h4>Herramientas de DM</h4>
-            <input type="text" id="map-url" placeholder="URL Mapa Manual">
-            <button onclick="updateMap()" style="width:100%">Cargar Mapa Manual</button>
-            <button onclick="toggleGrid()" style="width:100%; border: 1px dashed #777;">📏 Mostrar/Ocultar Cuadrícula</button>
-            <button class="danger" onclick="resetChat()" style="width:100%; margin-top:5px;">Limpiar Chat</button>
         </div>
     </div>
 
@@ -284,7 +285,7 @@
                 <button onclick="rollDice(10)">d10</button>
             </div>
         </div>
-        <h3 style="border-bottom: 1px solid #444;">Lista de Personajes</h3>
+        <h3 style="border-bottom: 1px solid #444;">Personajes & Enemigos</h3>
         <div id="char-list"></div>
     </div>
 
@@ -370,19 +371,22 @@
             charList.innerHTML = gameState.characters.map((char, idx) => {
                 const hpPercent = (char.hp / char.maxHp) * 100;
                 const stats = char.stats || { str: '?', dex: '?' };
+                // Corrección ID para personajes viejos
+                const safeId = char.id || char.name; 
+
                 return `
                     <div class="char-card" style="border-left-color: ${char.color || '#fff'}">
                         <div class="char-header">
                             <div><span class="char-name">${char.name}</span> <span class="char-meta">${char.race}</span></div>
-                            <button class="danger" onclick="window.deleteCharacter('${char.id}')">💀</button>
+                            <button class="danger" onclick="window.deleteCharacter('${safeId}')">💀</button>
                         </div>
                         <div class="hp-container"><div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div><div class="hp-text">${char.hp} / ${char.maxHp} HP</div></div>
                         <div class="stats-grid" style="font-size:0.7rem;">
                             <div class="stat-box">FUE: ${stats.str}</div> <div class="stat-box">DES: ${stats.dex}</div> <div class="stat-box">INT: ${stats.int}</div>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                            <button onclick="window.modHp('${char.id}', -1)">Herir</button>
-                            <button onclick="window.modHp('${char.id}', 1)">Curar</button>
+                            <button onclick="window.modHp('${safeId}', -1)">Herir</button>
+                            <button onclick="window.modHp('${safeId}', 1)">Curar</button>
                         </div>
                     </div>
                 `;
@@ -399,12 +403,12 @@
             tokenLayer.innerHTML = ""; 
             
             gameState.characters.forEach(char => {
-                // Posición segura
                 const x = char.x || 50; const y = char.y || 50;
-                
+                const safeId = char.id || char.name; // Soporte legacy
+
                 const token = document.createElement('div');
                 token.className = 'token';
-                token.id = `token-${char.id}`; // ID ÚNICO DOM
+                token.id = `token-${safeId}`; // ID DOM
                 token.style.left = x + '%'; token.style.top = y + '%';
                 token.style.backgroundColor = char.color || '#555';
                 token.innerText = char.name.substring(0, 2).toUpperCase();
@@ -413,8 +417,7 @@
                 label.className = 'token-name'; label.innerText = char.name;
                 token.appendChild(label);
                 
-                // DRAG EVENT (USAMOS ID NO NOMBRE)
-                token.onmousedown = (e) => startDrag(e, char.id);
+                token.onmousedown = (e) => startDrag(e, safeId);
                 tokenLayer.appendChild(token);
             });
         }
@@ -433,7 +436,6 @@
             let y = ((e.clientY - rect.top) / rect.height) * 100;
             x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
             
-            // Mover visualmente el token correcto por su ID de DOM
             const tokenEl = document.getElementById(`token-${draggedCharId}`);
             if(tokenEl) {
                 tokenEl.style.left = x + '%'; tokenEl.style.top = y + '%'; tokenEl.style.zIndex = 1000;
@@ -448,7 +450,8 @@
             x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
             
             const chars = gameState.characters.map(c => { 
-                if(c.id === draggedCharId) { c.x = x; c.y = y; } 
+                const safeId = c.id || c.name;
+                if(safeId === draggedCharId) { c.x = x; c.y = y; } 
                 return c; 
             });
             isDragging = false; draggedCharId = null;
@@ -465,7 +468,6 @@
         }
         function getYouTubeID(url) {
             url = url.trim();
-            // REGEX MEJORADO PARA DETECTAR CUALQUIER TIPO DE LINK
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^#&?]*)/);
             return (match && match[1].length === 11) ? match[1] : null;
         }
@@ -473,26 +475,24 @@
             const url = document.getElementById('music-url-input').value;
             const videoId = getYouTubeID(url);
             if (videoId) await updateDoc(gameRef, { musicId: videoId });
-            else alert("Link inválido. Asegúrate de que es un video de YouTube.");
+            else alert("Link inválido. Asegúrate de copiar la URL completa.");
         };
         window.quickMusic = async (url) => { const videoId = getYouTubeID(url); if(videoId) await updateDoc(gameRef, { musicId: videoId }); };
 
-        // --- LÓGICA DE JUEGO & IA GENERATIVA ---
+        // --- LÓGICA DE JUEGO ---
         function getRandomColor(type = "player") {
             const hue = type === "enemy" ? Math.floor(Math.random() * 60) + 330 : Math.floor(Math.random() * 360);
             return `hsl(${hue}, 70%, 40%)`;
         }
         function rollStat() { return Math.floor(Math.random() * 16) + 3; }
 
-        // Función base para crear personajes (con ID único y posición aleatoria)
         window.spawnCharacter = async (name, race, isEnemy = false) => {
-            // DESPLAZAMIENTO ALEATORIO PARA QUE NO SE APILEN
             const offsetX = 50 + (Math.random() * 10 - 5);
             const offsetY = 50 + (Math.random() * 10 - 5);
             
             const hp = isEnemy ? Math.floor(Math.random() * 15) + 5 : 20;
             const newChar = { 
-                id: Date.now().toString() + Math.random().toString().slice(2,5), // ID ÚNICO
+                id: Date.now().toString() + Math.random().toString().slice(2,5), 
                 name, race, hp, maxHp: hp, inventory: [], 
                 x: offsetX, y: offsetY, 
                 color: getRandomColor(isEnemy ? "enemy" : "player"), 
@@ -511,12 +511,25 @@
 
         window.deleteCharacter = async (id) => {
             if(confirm("¿Eliminar?")) {
-                const newChars = gameState.characters.filter(c => c.id !== id);
+                // Borra por ID o por Nombre (para viejos)
+                const newChars = gameState.characters.filter(c => c.id !== id && c.name !== id);
                 await updateDoc(gameRef, { characters: newChars });
             }
         };
+        
+        // NUEVA FUNCION: RESET TOTAL
+        window.resetCharacters = async () => {
+            if(confirm("¿ESTÁS SEGURO? Esto borrará a todos los héroes y enemigos del tablero.")) {
+                await updateDoc(gameRef, { characters: [] });
+            }
+        };
+
         window.modHp = async (id, amount) => {
-            const chars = gameState.characters.map(c => { if(c.id === id) c.hp = Math.min(c.maxHp, Math.max(0, c.hp + amount)); return c; });
+            const chars = gameState.characters.map(c => { 
+                const safeId = c.id || c.name;
+                if(safeId === id) c.hp = Math.min(c.maxHp, Math.max(0, c.hp + amount)); 
+                return c; 
+            });
             await updateDoc(gameRef, { characters: chars });
         };
         window.rollDice = async (sides) => {
@@ -529,7 +542,7 @@
         window.toggleGrid = () => { document.getElementById('grid-layer').classList.toggle('visible'); };
         window.resetChat = async () => { if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] }); };
 
-        // --- CEREBRO IA: NARRACIÓN + MAPAS + SPAWN DE ENEMIGOS ---
+        // --- CEREBRO IA ---
         document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
@@ -558,7 +571,6 @@
             try {
                 const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}`);
                 let text = await res.text();
-                // Limpieza de markdown
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const aiData = JSON.parse(text);
 
@@ -580,7 +592,6 @@
                 input.value = "";
             } catch(e) {
                 console.error(e);
-                // Fallback a texto simple si falla el JSON
                 const fb = await fetch(`https://text.pollinations.ai/${encodeURIComponent("DM responde: " + query)}`);
                 const fbText = await fb.text();
                 await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: fbText, type: "ai" }) });
