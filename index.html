@@ -641,13 +641,16 @@
         async function callGeminiAPI(prompt) {
             try {
                 // Verificamos que no estés usando la clave de ejemplo
-                if (GEMINI_API_KEY.includes("AIzaSyBHh2_Tn4NWauWhLhwJH8TtEsO24P9uJ7U")) {
-                    alert("¡ERROR! Sigues usando la API Key de ejemplo. Debes generar tu propia clave en Google AI Studio.");
+                if (GEMINI_API_KEY.includes("AIzaSyBHh2")) {
+                    alert("¡ERROR! Sigues usando la API Key de ejemplo.");
                     return "Error: Clave API inválida.";
                 }
 
-                // Usamos el modelo 'gemini-1.5-flash' que es el estándar actual
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                // INTENTO 1: Usamos la versión específica 'gemini-1.5-flash-001'
+                // A veces el alias 'gemini-1.5-flash' falla, pero la versión específica funciona.
+                const MODEL_NAME = "gemini-1.5-flash-001"; 
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -657,6 +660,10 @@
 
                 if (!response.ok) {
                     console.error("Detalles del error Gemini:", data);
+                    // Si falla el modelo Flash, sugerimos cambiarlo manualmente
+                    if (response.status === 404) {
+                        return `Error 404: El modelo ${MODEL_NAME} no se encontró. Prueba cambiar 'MODEL_NAME' en el código a "gemini-pro".`;
+                    }
                     throw new Error(data.error?.message || "Error desconocido de API");
                 }
                 
