@@ -32,10 +32,10 @@
             user-select: none;
         }
 
-        /* --- LOGIN MODAL (Siempre visible al inicio) --- */
+        /* --- UI COMPONENTS --- */
         #login-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,1); /* Fondo sólido para tapar todo */
+            background: rgba(0,0,0,1);
             z-index: 2000;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
@@ -126,6 +126,15 @@
         .hp-bar { height: 100%; transition: width 0.3s ease; }
         .hp-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 10px; line-height: 12px; text-shadow: 1px 1px 2px #000; }
         
+        /* ESTILOS NUEVOS PARA ESTADISTICAS */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+            margin: 8px 0; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;
+        }
+        .stat-box { text-align: center; }
+        .stat-lbl { font-size: 0.6rem; color: #888; display: block; }
+        .stat-val { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
+
         .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
         .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; }
 
@@ -154,7 +163,7 @@
 
     <div id="login-modal">
         <div class="login-box">
-            <center></center><h1><img src="dd.png" width="80px"> </h1></center>
+            <h1><center></center><img src="dd.png" width="150px"></h1></cenmter>
             <h2>Dungeon Portal</h2>
             <p>Introduce tu nombre de aventurero para esta sesión.</p>
             <input type="text" id="login-name" placeholder="Nombre..." autocomplete="off">
@@ -185,6 +194,7 @@
                 <option value="Orco">Orco</option>
                 <option value="Mago">Mago</option>
             </select>
+            <p style="font-size:0.7rem; color:#888;">*Se generarán stats aleatorios (FUE, DES, INT, PER, CAR)</p>
             <button class="primary" onclick="createCharacter()" style="width:100%">Despertar Héroe</button>
         </div>
 
@@ -260,9 +270,6 @@
         const gameRef = doc(db, "games", "partida_main");
 
         let gameState = { chat: [], characters: [], mapUrl: "" };
-        
-        // --- SESIÓN ÚNICA POR PESTAÑA (sessionStorage) ---
-        // Al usar sessionStorage en lugar de localStorage, cada pestaña es un usuario diferente.
         let localPlayer = sessionStorage.getItem("dnd_player") || null;
 
         // --- AUTH ---
@@ -274,28 +281,22 @@
                 document.getElementById('login-modal').style.display = 'flex';
             }
         }
-        
         window.login = () => {
             const name = document.getElementById('login-name').value.trim();
             if(!name) return;
             localPlayer = name;
-            // Guardamos en la sesión actual (se borra al cerrar pestaña)
             sessionStorage.setItem("dnd_player", name);
             checkLogin();
         };
-
         window.logout = () => {
             if(confirm("¿Salir de la sesión?")) {
                 sessionStorage.removeItem("dnd_player");
                 location.reload();
             }
         };
-
-        // Soporte Enter en Login
         document.getElementById('login-name').addEventListener('keypress', (e) => {
             if(e.key === 'Enter') window.login();
         });
-
         checkLogin();
 
         // --- INIT ---
@@ -333,20 +334,35 @@
             const charList = document.getElementById('char-list');
             charList.innerHTML = gameState.characters.map((char, idx) => {
                 const hpPercent = (char.hp / char.maxHp) * 100;
+                
+                // Si el personaje es antiguo y no tiene stats, mostramos '??'
+                const stats = char.stats || { str: '?', dex: '?', int: '?', per: '?', cha: '?' };
+
                 return `
                     <div class="char-card" style="border-left-color: ${char.color || '#fff'}">
                         <div class="char-header">
                             <div><span class="char-name">${char.name}</span> <span class="char-meta">${char.race}</span></div>
                             <button class="danger" onclick="window.deleteCharacter('${char.name}')">💀</button>
                         </div>
+                        
                         <div class="hp-container">
                             <div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div>
                             <div class="hp-text">${char.hp} / ${char.maxHp} HP</div>
                         </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-box"><span class="stat-lbl">FUE</span><span class="stat-val">${stats.str}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">DES</span><span class="stat-val">${stats.dex}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">INT</span><span class="stat-val">${stats.int}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">PER</span><span class="stat-val">${stats.per}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">CAR</span><span class="stat-val">${stats.cha}</span></div>
+                        </div>
+
                         <div style="display:flex; justify-content:space-between; margin: 5px 0;">
                             <button onclick="window.modHp('${char.name}', -1)">Herir</button>
                             <button onclick="window.modHp('${char.name}', 1)">Curar</button>
                         </div>
+                        
                         <ul style="padding:0; list-style:none;">
                             ${(char.inventory || []).map((item, i) => `
                                 <li class="inv-item">• ${item} <button class="inv-btn-del" onclick="window.modInv('${char.name}', 'remove', ${i})">×</button></li>
@@ -365,7 +381,7 @@
         let draggedCharName = null;
 
         function renderMap() {
-            if (isDragging) return; // No tocar si se está moviendo
+            if (isDragging) return; 
 
             if(gameState.mapUrl) document.getElementById('map-img').src = gameState.mapUrl;
             
@@ -380,7 +396,7 @@
                 token.className = 'token';
                 token.style.left = x + '%';
                 token.style.top = y + '%';
-                token.style.backgroundColor = char.color || '#555'; // Color único
+                token.style.backgroundColor = char.color || '#555';
                 token.innerText = char.name.substring(0, 2).toUpperCase();
                 
                 const label = document.createElement('div');
@@ -439,6 +455,12 @@
             return colors[Math.floor(Math.random() * colors.length)];
         }
 
+        // GENERADOR DE STATS
+        function rollStat() {
+            // Genera un número entre 3 y 18 (aprox. 3d6)
+            return Math.floor(Math.random() * 16) + 3;
+        }
+
         window.createCharacter = async () => {
             const name = document.getElementById('new-name').value.trim();
             const race = document.getElementById('new-race').value;
@@ -448,7 +470,15 @@
             const newChar = { 
                 name, race, hp, maxHp: hp, inventory: [], 
                 x: 50, y: 50, 
-                color: getRandomColor() // Asigna color permanente
+                color: getRandomColor(),
+                // GENERACION DE STATS AQUI
+                stats: {
+                    str: rollStat(),
+                    dex: rollStat(),
+                    int: rollStat(),
+                    per: rollStat(),
+                    cha: rollStat()
+                }
             };
             
             if(gameState.characters.find(c => c.name === name)) return alert("Nombre ocupado.");
@@ -518,7 +548,12 @@
             input.value = "Consultando...";
             
             try {
-                const context = `Eres un DM de rol. Jugadores: ${gameState.characters.map(c=>c.name).join(', ')}. Usuario pregunta: ${query}. Responde corto y en español.`;
+                // Incluimos las stats en el contexto de la IA para que pueda usarlas
+                const charContext = gameState.characters.map(c => 
+                    `${c.name} (${c.race}, FUE:${c.stats?.str}, INT:${c.stats?.int})`
+                ).join(', ');
+
+                const context = `Eres un DM de rol. Jugadores: ${charContext}. Usuario pregunta: ${query}. Responde corto y en español.`;
                 const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(context)}`);
                 const text = await res.text();
                 await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: text, type: "ai" }) });
