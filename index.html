@@ -126,7 +126,7 @@
             padding: 2px 5px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; pointer-events: none;
         }
 
-        /* CARDS */
+        /* MESSAGES & CARDS */
         .msg { margin-bottom: 8px; line-height: 1.4; word-wrap: break-word; }
         .msg strong { color: var(--accent); font-family: 'Cinzel', serif; }
         .msg.ai { border-left: 3px solid #bd93f9; padding-left: 10px; color: #e0d0ff; background: rgba(189, 147, 249, 0.05); }
@@ -148,6 +148,17 @@
         .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
         .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; }
 
+        /* CREATION STATS INPUTS */
+        .stats-inputs {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px;
+        }
+        .stats-inputs input {
+            text-align: center; padding: 5px; font-size: 0.9rem;
+        }
+        .stats-inputs label {
+            font-size: 0.6rem; color: #aaa; text-align: center; display: block; margin-bottom: 2px;
+        }
+
         #dice-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
             display: flex; justify-content: center; align-items: center; z-index: 999;
@@ -156,11 +167,11 @@
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
 
-        /* REPRODUCTOR NATIVO (SIN YOUTUBE) */
+        /* REPRODUCTOR NATIVO */
         .music-container { 
             margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 10px; border-radius: 5px; text-align: center;
         }
-        audio { width: 100%; margin-bottom: 10px; outline: none; height: 40px; }
+        audio { width: 100%; margin-bottom: 10px; outline: none; }
         .music-links { display: flex; gap: 5px; margin-bottom: 5px; justify-content: center; }
         .music-links button { font-size: 0.8rem; padding: 8px; flex: 1; }
 
@@ -207,7 +218,7 @@
                 Tu navegador no soporta audio.
             </audio>
             
-            <p style="font-size:0.7rem; color:#aaa; margin-top:5px;">*Controlado por el DM.</p>
+            <p style="font-size:0.7rem; color:#aaa;">*El DM controla la música para todos.</p>
             
             <div id="dm-music-controls">
                 <div class="music-links">
@@ -247,6 +258,18 @@
                 <option value="Orco">Orco</option>
                 <option value="Mago">Mago</option>
             </select>
+            
+            <div style="margin-top:10px;">
+                <label style="font-size:0.8rem; color:#aaa;">Estadísticas (Opcional):</label>
+                <div class="stats-inputs">
+                    <div><label>FUE</label><input type="number" id="in-str" value="10"></div>
+                    <div><label>DES</label><input type="number" id="in-dex" value="10"></div>
+                    <div><label>INT</label><input type="number" id="in-int" value="10"></div>
+                    <div><label>PER</label><input type="number" id="in-per" value="10"></div>
+                    <div><label>CAR</label><input type="number" id="in-cha" value="10"></div>
+                </div>
+            </div>
+
             <button class="primary" onclick="createCharacter()" style="width:100%">Despertar Héroe</button>
         </div>
 
@@ -265,7 +288,7 @@
 
     <div class="main-area">
         <div id="map-container">
-            <img id="map-img" src="fondo.jpg" alt="Mapa del Juego">
+            <img id="map-img" src="fondo.png" alt="Mapa del Juego">
             <div id="grid-layer" class="layer"></div>
             <div id="token-layer" class="layer"></div>
         </div>
@@ -349,7 +372,7 @@
             try {
                 const docSnap = await getDoc(gameRef);
                 if (!docSnap.exists()) {
-                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "fondo.jpg", musicUrl: "" });
+                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "fondo.png", musicUrl: "" });
                 }
                 onSnapshot(gameRef, (doc) => {
                     if(doc.exists()) {
@@ -375,7 +398,7 @@
             const charList = document.getElementById('char-list');
             charList.innerHTML = gameState.characters.map((char, idx) => {
                 const hpPercent = (char.hp / char.maxHp) * 100;
-                const stats = char.stats || { str: '?', dex: '?' };
+                const stats = char.stats || { str: '?', dex: '?', int: '?', per: '?', cha: '?' };
                 const safeId = char.id || char.name; 
 
                 return `
@@ -386,7 +409,11 @@
                         </div>
                         <div class="hp-container"><div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div><div class="hp-text">${char.hp} / ${char.maxHp} HP</div></div>
                         <div class="stats-grid" style="font-size:0.7rem;">
-                            <div class="stat-box">FUE: ${stats.str}</div> <div class="stat-box">DES: ${stats.dex}</div> <div class="stat-box">INT: ${stats.int}</div>
+                            <div class="stat-box"><span class="stat-lbl">FUE</span><span class="stat-val">${stats.str}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">DES</span><span class="stat-val">${stats.dex}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">INT</span><span class="stat-val">${stats.int}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">PER</span><span class="stat-val">${stats.per}</span></div>
+                            <div class="stat-box"><span class="stat-lbl">CAR</span><span class="stat-val">${stats.cha}</span></div>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-top:5px;">
                             <button onclick="window.modHp('${safeId}', -1)">Herir</button>
@@ -403,7 +430,7 @@
             if (isDragging) return; 
             
             // MAPA CON FONDO DEFAULT SI NO HAY NADA
-            const currentMap = gameState.mapUrl || "fondo.jpg";
+            const currentMap = gameState.mapUrl || "fondo.png";
             const mapImg = document.getElementById('map-img');
             if (!mapImg.src.includes(currentMap)) {
                 mapImg.src = currentMap;
@@ -464,18 +491,15 @@
             await updateDoc(gameRef, { characters: chars });
         });
 
-        // --- SISTEMA DE MÚSICA (NATIVO HTML5) ---
+        // --- SISTEMA DE MÚSICA ---
         let currentMusicUrl = "";
-        
         function checkMusic() {
-            // Sincronización de música
             if (gameState.musicUrl && gameState.musicUrl !== currentMusicUrl) {
                 currentMusicUrl = gameState.musicUrl;
                 const audio = document.getElementById('audio-player');
                 audio.src = currentMusicUrl;
                 audio.play().catch(e => console.log("Auto-play bloqueado hasta interacción usuario."));
             } else if (!gameState.musicUrl && currentMusicUrl) {
-                // Si se borró la música, detener
                 currentMusicUrl = "";
                 const audio = document.getElementById('audio-player');
                 audio.pause();
@@ -483,13 +507,8 @@
             }
         }
 
-        window.playMusic = async (url) => {
-            await updateDoc(gameRef, { musicUrl: url });
-        };
-
-        window.stopMusic = async () => {
-            await updateDoc(gameRef, { musicUrl: "" });
-        };
+        window.playMusic = async (url) => { await updateDoc(gameRef, { musicUrl: url }); };
+        window.stopMusic = async () => { await updateDoc(gameRef, { musicUrl: "" }); };
 
         // --- LÓGICA DE JUEGO ---
         function getRandomColor(type = "player") {
@@ -498,26 +517,44 @@
         }
         function rollStat() { return Math.floor(Math.random() * 16) + 3; }
 
-        window.spawnCharacter = async (name, race, isEnemy = false) => {
+        // Función base de creación
+        window.spawnCharacter = async (name, race, isEnemy = false, manualStats = null) => {
             const offsetX = 50 + (Math.random() * 10 - 5);
             const offsetY = 50 + (Math.random() * 10 - 5);
-            
             const hp = isEnemy ? Math.floor(Math.random() * 15) + 5 : 20;
+            
+            // Si hay manualStats, usarlas. Si no (null), generar random.
+            const stats = manualStats || {
+                str: rollStat(), dex: rollStat(), int: rollStat(), per: rollStat(), cha: rollStat()
+            };
+
             const newChar = { 
                 id: Date.now().toString() + Math.random().toString().slice(2,5), 
                 name, race, hp, maxHp: hp, inventory: [], 
                 x: offsetX, y: offsetY, 
                 color: getRandomColor(isEnemy ? "enemy" : "player"), 
-                stats: { str: rollStat(), dex: rollStat(), int: rollStat(), per: rollStat(), cha: rollStat() }
+                stats: stats
             };
             await updateDoc(gameRef, { characters: arrayUnion(newChar) });
         };
 
+        // Función llamada por el botón "Despertar Héroe" (HUMANO)
         window.createCharacter = async () => {
             const name = document.getElementById('new-name').value.trim();
             const race = document.getElementById('new-race').value;
             if(!name) return;
-            await window.spawnCharacter(name, race);
+
+            // Leer stats de los inputs
+            const manualStats = {
+                str: parseInt(document.getElementById('in-str').value) || 10,
+                dex: parseInt(document.getElementById('in-dex').value) || 10,
+                int: parseInt(document.getElementById('in-int').value) || 10,
+                per: parseInt(document.getElementById('in-per').value) || 10,
+                cha: parseInt(document.getElementById('in-cha').value) || 10
+            };
+
+            // Pasar los stats manuales
+            await window.spawnCharacter(name, race, false, manualStats);
             document.getElementById('new-name').value = "";
         };
 
@@ -540,7 +577,7 @@
                 await updateDoc(gameRef, { 
                     characters: [], 
                     chat: [],
-                    mapUrl: "fondo.jpg", 
+                    mapUrl: "fondo.png", // Reset a imagen por defecto
                     musicUrl: ""
                 });
                 alert("Partida Reiniciada.");
@@ -565,7 +602,7 @@
         window.toggleGrid = () => { document.getElementById('grid-layer').classList.toggle('visible'); };
         window.resetChat = async () => { if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] }); };
 
-        // --- CEREBRO IA (SOLUCION 502/SYNTAX ERROR) ---
+        // --- CEREBRO IA ---
         document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
@@ -581,16 +618,14 @@
             if(!query) return alert("Escribe qué quieres que haga la IA...");
             input.value = "Consultando...";
 
-            // ESTRATEGIA DE PARSEO ROBUSO (NO JSON)
             const prompt = `Actua como DM D&D. Entrada: "${query}".
-            Responde con este formato EXACTO usando separadores |||:
-            HISTORIA: [Tu narracion breve] ||| MAPA: [Prompt visual en ingles o NULL] ||| ENEMIGOS: [Lista nombres y raza o NULL]`;
+            Responde con este formato EXACTO con separadores |||:
+            HISTORIA: [Tu narracion breve] ||| MAPA: [Prompt visual en ingles o NULL] ||| ENEMIGOS: [Lista nombres separada por comas o NULL]`;
 
             try {
                 const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
                 const text = await res.text();
                 
-                // Parseo manual por separadores (más seguro que JSON)
                 const parts = text.split('|||');
                 const narrative = parts[0]?.replace('HISTORIA:', '').trim();
                 const mapPrompt = parts[1]?.replace('MAPA:', '').trim();
@@ -602,14 +637,13 @@
                     const seed = Math.floor(Math.random() * 999);
                     const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${mapPrompt} ${seed}?width=1080&height=720&nologo=true`;
                     await updateDoc(gameRef, { mapUrl: mapUrl });
-                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: "🌍 Nuevo mapa generado.", type: "system" }) });
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: "🌍 Generando mapa...", type: "system" }) });
                 }
 
                 if(enemies && enemies !== 'NULL' && enemies !== 'null') {
-                    // Intentar extraer nombres simples
                     const enemyList = enemies.split(',');
                     for(const en of enemyList) {
-                        await window.spawnCharacter(en.trim(), "Monstruo", true);
+                        if(en.trim()) await window.spawnCharacter(en.trim(), "Monstruo", true, null); // Pasamos null para que genere stats random
                     }
                     await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `⚠️ Enemigos detectados: ${enemies}`, type: "system" }) });
                 }
