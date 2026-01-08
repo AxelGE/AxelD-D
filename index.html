@@ -48,7 +48,7 @@
         }
         .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #fff; font-weight: bold; }
         
-        .login-input, .api-input { 
+        .login-input, .api-input, .model-select { 
             width: 100%; font-size: 1.1rem; padding: 10px; margin: 15px 0; 
             text-align: center; background: #333; color: white; border: 1px solid #555;
             border-radius: 5px;
@@ -149,7 +149,6 @@
         .stat-lbl { font-size: 0.6rem; color: #888; display: block; }
         .stat-val { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
 
-        /* INPUTS ESTADISTICAS */
         .stats-inputs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px; }
         .stats-inputs input { text-align: center; padding: 5px; font-size: 0.9rem; }
         .stats-inputs label { font-size: 0.6rem; color: #aaa; text-align: center; display: block; margin-bottom: 2px; }
@@ -199,13 +198,22 @@
             <span class="modal-close" onclick="closeSettings()">✕</span>
             <h2 style="color: var(--magic);">🔮 Configuración de IA</h2>
             <p style="font-size: 0.9rem; color: #ccc;">
-                Para que la IA funcione sin errores y gratis, necesitas tu propia <strong>Google Gemini API Key</strong>. 
+                Configura tu conexión con Google Gemini.
                 <br><br>
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent);">👉 Consigue tu Key aquí (Gratis)</a>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent);">👉 1. Consigue tu Key aquí (Gratis)</a>
             </p>
+            
+            <label style="display:block; text-align:left; font-size:0.8rem; color:#aaa; margin-top:10px;">Tu API Key:</label>
             <input type="password" id="api-key-input" class="api-input" placeholder="Pega tu clave aquí (AIzaSy...)" autocomplete="off">
-            <button class="magic" onclick="saveApiKey()" style="width:100%; padding: 10px;">💾 Guardar Clave</button>
-            <p style="font-size: 0.8rem; margin-top: 10px; color: #777;">La clave se guarda en TU navegador. Nadie más la ve.</p>
+            
+            <label style="display:block; text-align:left; font-size:0.8rem; color:#aaa; margin-top:10px;">Modelo de IA:</label>
+            <select id="model-select" class="model-select">
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Rápido)</option>
+                <option value="gemini-pro">Gemini Pro (Estable)</option>
+            </select>
+
+            <button class="magic" onclick="saveSettings()" style="width:100%; padding: 10px; margin-top:15px;">💾 Guardar Configuración</button>
+            <p style="font-size: 0.8rem; margin-top: 10px; color: #777;">Datos guardados localmente en tu navegador.</p>
         </div>
     </div>
 
@@ -223,7 +231,6 @@
     </header>
 
     <div class="panel">
-        
         <h3 style="color: #1DB954;">🎵 Ambiente Musical</h3>
         <div class="music-container">
             <audio id="audio-player" controls loop>
@@ -371,17 +378,22 @@
             if(confirm("¿Salir?")) { sessionStorage.removeItem("dnd_player"); location.reload(); }
         };
         
-        // --- API KEY MANAGEMENT ---
+        // --- SETTINGS MANAGEMENT ---
         window.openSettings = () => { 
             document.getElementById('settings-modal').style.display = 'flex'; 
             document.getElementById('api-key-input').value = localStorage.getItem('gemini_api_key') || "";
+            document.getElementById('model-select').value = localStorage.getItem('gemini_model') || "gemini-pro";
         };
         window.closeSettings = () => { document.getElementById('settings-modal').style.display = 'none'; };
-        window.saveApiKey = () => {
+        
+        window.saveSettings = () => {
             const key = document.getElementById('api-key-input').value.trim();
+            const model = document.getElementById('model-select').value;
+            
             if(key) {
                 localStorage.setItem('gemini_api_key', key);
-                alert("Clave guardada en tu navegador.");
+                localStorage.setItem('gemini_model', model);
+                alert("Configuración guardada. Si falla, intenta cambiar de modelo.");
                 window.closeSettings();
             } else {
                 alert("Por favor ingresa una clave válida.");
@@ -583,8 +595,7 @@
         window.toggleGrid = () => { document.getElementById('grid-layer').classList.toggle('visible'); };
         window.resetChat = async () => { if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] }); };
 
-        // --- CEREBRO IA (GEMINI - USER KEY) ---
-        // Solución robusta: El usuario pone su clave, no hay bloqueo de GitHub ni CORS.
+        // --- CEREBRO IA (GEMINI - DYNAMIC MODEL) ---
         
         document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         window.sendMessage = async () => {
@@ -596,8 +607,10 @@
         };
 
         window.askAIChat = async () => {
-            // 1. Verificar si hay clave
             const userKey = localStorage.getItem('gemini_api_key');
+            // Usamos gemini-pro como fallback si no hay nada guardado
+            const userModel = localStorage.getItem('gemini_model') || 'gemini-pro';
+
             if(!userKey) {
                 window.openSettings();
                 return alert("⚠️ Para usar la IA, primero pega tu API Key en Configuración.");
@@ -607,7 +620,7 @@
             const query = input.value;
             if(!query) return alert("Escribe qué quieres que haga la IA...");
             
-            input.value = "Conjurando realidad...";
+            input.value = "Consultando a " + userModel + "...";
 
             const prompt = `
             Eres un Dungeon Master experto. Entrada del usuario: "${query}"
@@ -617,7 +630,8 @@
             `;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userKey}`, {
+                // Invocamos dinámicamente el modelo elegido
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${userModel}:generateContent?key=${userKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -631,7 +645,6 @@
 
                 const text = data.candidates[0].content.parts[0].text;
                 
-                // Parseo
                 const parts = text.split('|||');
                 const narrative = parts[0]?.replace('HISTORIA:', '').trim();
                 const mapPrompt = parts[1]?.replace('MAPA:', '').trim();
@@ -639,7 +652,6 @@
 
                 if(narrative) await updateDoc(gameRef, { chat: arrayUnion({ user: "Gemini DM", text: narrative, type: "ai" }) });
 
-                // Generación de Mapa (Pollinations via URL Image - ESTO SÍ FUNCIONA SIEMPRE)
                 if(mapPrompt && mapPrompt !== 'NULL' && mapPrompt !== 'null' && mapPrompt.length > 3) {
                     const seed = Math.floor(Math.random() * 999);
                     const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${mapPrompt} ${seed}?width=1080&height=720&nologo=true`;
@@ -660,11 +672,14 @@
 
             } catch(e) {
                 console.error(e);
-                if(e.message.includes('API key not valid') || e.message.includes('403')) {
-                    alert("Tu API Key es inválida o ha expirado. Revísala en Configuración.");
+                if(e.message.includes('404')) {
+                    alert("El modelo " + userModel + " no está disponible. Ve a configuración y prueba con el otro.");
+                    window.openSettings();
+                } else if(e.message.includes('API key not valid') || e.message.includes('403')) {
+                    alert("API Key inválida. Revisa la configuración.");
                     window.openSettings();
                 } else {
-                    alert("Error con Gemini: " + e.message);
+                    alert("Error Gemini: " + e.message);
                 }
                 input.value = query;
             }
