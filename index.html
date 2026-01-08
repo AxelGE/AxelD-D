@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Portal - Free Tier</title>
+    <title>Dungeon Portal Gaming</title>
     <link rel="icon" href="dd.png">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -12,6 +12,7 @@
             --bg-panel: #1e1e24;
             --accent: #d4af37;
             --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
             --danger: #cf6679;
             --magic: #bd93f9;
         }
@@ -20,8 +21,10 @@
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
-            margin: 0; padding: 0;
-            height: 100vh; width: 100vw;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
             display: grid;
             grid-template-columns: 420px 1fr 300px;
             grid-template-rows: 60px 1fr;
@@ -29,29 +32,25 @@
             user-select: none;
         }
 
-        /* --- MODALES (LOGIN Y CONFIG) --- */
-        .modal-overlay {
+        /* --- LOGIN MODAL --- */
+        #login-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 2000;
+            background: rgba(0,0,0,1);
+            z-index: 2000;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
         }
-        .modal-box {
+        .login-box {
             background: var(--bg-panel); border: 2px solid var(--accent);
-            padding: 30px; text-align: center; border-radius: 10px;
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
-            max-width: 500px; width: 90%; position: relative;
+            padding: 40px; text-align: center; border-radius: 10px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+            max-width: 400px; width: 90%;
         }
-        .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #fff; font-size: 1.2rem; }
-        
-        input.clean-input { 
-            width: 100%; font-size: 1.1rem; padding: 12px; margin: 15px 0; 
+        .login-box input { 
+            width: 100%; font-size: 1.2rem; padding: 10px; margin: 20px 0; 
             text-align: center; background: #333; color: white; border: 1px solid #555;
-            border-radius: 5px; outline: none;
         }
-        input.clean-input:focus { border-color: var(--accent); }
 
-        /* --- UI GENERAL --- */
         header {
             grid-column: 1 / -1; background: #000; border-bottom: 2px solid var(--accent);
             display: flex; align-items: center; padding: 0 20px; justify-content: space-between; z-index: 10;
@@ -72,29 +71,41 @@
         button.primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
         button.danger { background: var(--danger); color: #fff; border: none; }
         button.magic { background: var(--magic); color: #000; font-weight: bold; border: none; }
-        button.settings { background: #000; border: 1px solid var(--accent); color: var(--accent); }
 
-        /* --- CHAT Y MAPA --- */
+        input, select, textarea {
+            background: #2b2b2b; border: 1px solid #444; color: white; padding: 8px;
+            border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 5px;
+        }
+
+        /* --- MAP & CHAT LAYOUT --- */
         .main-area {
             grid-column: 2; grid-row: 2; display: flex; flex-direction: column; 
             background: #000; position: relative; height: 100%; overflow: hidden;
         }
+        
         #map-container {
-            flex: 1; position: relative; background: #111;
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            flex: 1; min-height: 0; position: relative; 
+            background: #111;
+            display: flex; align-items: center; justify-content: center; 
+            overflow: hidden;
         }
-        #map-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+        #map-img { 
+            width: 100%; height: 100%; 
+            object-fit: contain; 
+            pointer-events: none; transition: opacity 0.5s;
+        }
 
         #chat-container {
             flex: 0 0 300px; border-top: 2px solid var(--accent); 
-            background: rgba(0,0,0,0.95); display: flex; flex-direction: column; z-index: 10;
+            background: rgba(0,0,0,0.95);
+            display: flex; flex-direction: column; z-index: 10;
         }
         #chat-box { flex-grow: 1; overflow-y: auto; padding: 15px; font-size: 0.95rem; }
         .chat-input-area { display: flex; padding: 10px; gap: 5px; background: #1e1e24; }
-        .chat-input-area input { flex-grow: 1; background: #333; border: 1px solid #555; color: white; padding: 10px; border-radius: 4px; }
-
-        /* --- TOKENS Y GRID --- */
+        
+        /* TOKENS & LAYERS */
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        
         #grid-layer {
             background-image: linear-gradient(#555 1px, transparent 1px), linear-gradient(90deg, #555 1px, transparent 1px);
             background-size: 50px 50px; opacity: 0.3; display: none;
@@ -107,129 +118,192 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; font-family: 'Cinzel', serif; color: white;
             text-shadow: 0 0 4px black; box-shadow: 0 0 10px rgba(0,0,0,0.8);
-            border: 2px solid white; z-index: 100;
+            border: 2px solid white; transition: top 0.05s, left 0.05s; z-index: 100;
         }
+        .token:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); z-index: 200; transition: none; }
         .token-name {
             position: absolute; top: -20px; background: rgba(0,0,0,0.7); 
             padding: 2px 5px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; pointer-events: none;
         }
 
-        /* --- TARJETAS PJ --- */
+        /* MESSAGES & CARDS */
+        .msg { margin-bottom: 8px; line-height: 1.4; word-wrap: break-word; }
+        .msg strong { color: var(--accent); font-family: 'Cinzel', serif; }
+        .msg.ai { border-left: 3px solid #bd93f9; padding-left: 10px; color: #e0d0ff; background: rgba(189, 147, 249, 0.05); }
+        .msg.system { color: #f1c40f; font-style: italic; text-align: center; font-size: 0.85em; opacity: 0.8; }
+
         .char-card {
             background: #2a2a2e; border: 1px solid #444; padding: 10px; margin-bottom: 15px;
             border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border-left: 5px solid transparent;
         }
-        .msg.ai { border-left: 3px solid var(--magic); padding-left: 10px; color: #e0d0ff; background: rgba(189, 147, 249, 0.05); margin-bottom: 8px;}
-        .msg strong { color: var(--accent); }
+        .hp-container { height: 12px; background: #444; border-radius: 6px; overflow: hidden; margin: 8px 0; position: relative; }
+        .hp-bar { height: 100%; transition: width 0.3s ease; }
+        .hp-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 10px; line-height: 12px; text-shadow: 1px 1px 2px #000; }
+        
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+            margin: 8px 0; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;
+        }
+        .stat-box { text-align: center; }
+        .stat-lbl { font-size: 0.6rem; color: #888; display: block; }
+        .stat-val { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
 
-        /* --- RESPONSIVE --- */
+        .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
+        .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; }
+
+        #dice-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+            display: flex; justify-content: center; align-items: center; z-index: 999;
+            font-size: 8rem; font-family: 'Cinzel', serif; color: #fff; text-shadow: 0 0 30px var(--accent);
+            opacity: 0; transition: opacity 0.5s, transform 0.5s; transform: scale(0.5);
+        }
+        #dice-overlay.active { opacity: 1; transform: scale(1); }
+
+        /* REPRODUCTOR MÚSICA NATIVO */
+        .music-container { 
+            margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 10px; border-radius: 5px; text-align: center;
+        }
+        audio { width: 100%; margin-bottom: 10px; }
+        .music-links { display: flex; gap: 5px; margin-bottom: 5px; justify-content: center; }
+        .music-links button { font-size: 0.8rem; padding: 6px; flex: 1; }
+
+        .guide-list { list-style: none; padding: 0; font-size: 0.85rem; color: #aaa; }
+        .guide-list li { margin-bottom: 6px; border-bottom: 1px solid #333; padding-bottom: 4px; cursor: pointer; }
+        .guide-list li:hover { color: var(--magic); }
+
         @media (max-width: 800px) {
             body { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr auto; overflow-y: scroll; }
             .panel { max-height: 300px; }
-            .main-area { grid-column: 1; height: 50vh; }
+            .main-area { grid-column: 1; height: 60vh; }
             #chat-container { flex: 0 0 200px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="login-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h1><img src="dd.png" width="100px"></h1>
+    <div id="login-modal">
+        <div class="login-box">
+            <h1><img src="dd.png" width="120px"></h1>
             <h2>Dungeon Portal</h2>
-            <input type="text" id="login-name" class="clean-input" placeholder="Tu Nombre de Jugador" autocomplete="off">
-            <button class="primary" onclick="login()" style="width:100%; padding: 15px;">ENTRAR</button>
+            <p>Introduce tu nombre de aventurero para esta sesión.</p>
+            <input type="text" id="login-name" placeholder="Nombre..." autocomplete="off">
+            <button class="primary" onclick="login()" style="width:100%; font-size:1.1rem; padding: 15px;">ENTRAR AL MUNDO</button>
         </div>
     </div>
 
-    <div id="settings-modal" class="modal-overlay" style="display:none;">
-        <div class="modal-box">
-            <span class="modal-close" onclick="closeSettings()">✕</span>
-            <h2 style="color: var(--magic);">🔑 Llave Maestra (Google AI)</h2>
-            <p style="font-size: 0.9rem; color: #ccc;">
-                Para usar la IA, pega tu <strong>Google API Key</strong> aquí.<br>
-                Se guardará solo en tu navegador (Seguro y Privado).
-            </p>
-            <input type="password" id="api-key-input" class="clean-input" placeholder="Pega tu API Key (AIzaSy...)" autocomplete="off">
-            <button class="magic" onclick="saveApiKey()" style="width:100%; padding: 10px;">💾 Guardar y Conectar</button>
-            <p style="font-size: 0.8rem; margin-top: 15px; color: #888;">
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent);">¿No tienes Key? Consíguela Gratis Aquí</a>
-            </p>
-        </div>
-    </div>
+    <div id="dice-overlay">20</div>
 
     <header>
-        <h1><img src="dd.png" width="80px"> Dungeon Portal</h1>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <button class="settings" onclick="openSettings()">⚙️ API Key</button>
-            <span id="player-display" style="color: var(--accent); font-size: 0.9rem;">...</span>
-            <button onclick="logout()" style="font-size:0.7rem;">Salir</button>
+        <h1><img src="dd.png" width="100px"> Dungeon Portal</h1>
+        <div style="font-size: 0.9rem;">
+            👤 <span id="current-player-display" style="color: var(--accent);">...</span>
+            <button onclick="logout()" style="font-size:0.7rem; padding: 2px 5px; margin-left: 10px;">Salir</button>
         </div>
     </header>
 
     <div class="panel">
-        <h3 style="color: #1DB954;">🎵 Música</h3>
-        <div style="text-align: center; background: #000; padding: 10px; border-radius: 5px;">
-            <audio id="audio-player" controls loop style="width:100%; margin-bottom:5px;"></audio>
-            <div style="display:flex; gap:5px;">
-                <button onclick="playMusic('batalla.mp3')" style="flex:1;">⚔️</button>
-                <button onclick="playMusic('taberna.mp3')" style="flex:1;">🍺</button>
-                <button onclick="playMusic('bosque.mp3')" style="flex:1;">🌲</button>
-                <button onclick="stopMusic()" class="danger" style="flex:1;">⏹️</button>
+        
+        <h3 style="color: #1DB954;">🎵 Ambiente Musical</h3>
+        <div class="music-container">
+            <audio id="audio-player" controls loop>
+                <source src="" type="audio/mpeg">
+                Tu navegador no soporta audio.
+            </audio>
+            
+            <p style="font-size:0.7rem; color:#aaa; margin-top:5px;">*El DM controla la música.</p>
+            
+            <div id="dm-music-controls">
+                <div class="music-links">
+                    <button onclick="playMusic('batalla.mp3')">⚔️ Batalla</button>
+                    <button onclick="playMusic('taberna.mp3')">🍺 Taberna</button>
+                    <button onclick="playMusic('bosque.mp3')">🌲 Bosque</button>
+                </div>
+                <button class="danger" onclick="stopMusic()" style="width:100%; font-size:0.8rem;">⏹️ Detener Música</button>
             </div>
         </div>
 
         <hr style="border-color: #333; margin: 20px 0;">
 
-        <h3>🛡️ DM Tools</h3>
-        <input type="text" id="map-url" placeholder="URL Mapa Manual" class="clean-input" style="padding: 5px; margin: 5px 0;">
-        <button onclick="updateMap()" style="width:100%">Cargar Mapa</button>
-        <button onclick="toggleGrid()" style="width:100%">Cuadrícula</button>
-        <button class="danger" onclick="resetChat()" style="width:100%; margin-top:10px;">Borrar Chat</button>
-        <button class="danger" onclick="resetCharacters()" style="width:100%">Borrar PJs</button>
+        <div id="dm-tools">
+            <h4>Herramientas de DM</h4>
+            <input type="text" id="map-url" placeholder="URL Mapa Manual">
+            <button onclick="updateMap()" style="width:100%">Cargar Mapa Manual</button>
+            <button onclick="toggleGrid()" style="width:100%; border: 1px dashed #777;">📏 Mostrar/Ocultar Cuadrícula</button>
+            <button class="danger" onclick="resetChat()" style="width:100%; margin-top:5px;">Limpiar Chat</button>
+            <button class="danger" onclick="resetCharacters()" style="width:100%; margin-top:5px; border: 1px solid #f00;">☠️ Borrar PJs</button>
+            
+            <button class="danger" onclick="endGame()" style="width:100%; margin-top:15px; padding:15px; background: darkred; color: white; font-weight: bold; border: 2px solid red;">
+                🛑 TERMINAR PARTIDA
+            </button>
+        </div>
 
         <hr style="border-color: #333; margin: 20px 0;">
 
-        <h3>🧙 Crear PJ</h3>
-        <input type="text" id="new-name" placeholder="Nombre" class="clean-input" style="padding: 5px; margin: 5px 0;">
-        <select id="new-race" class="clean-input" style="padding: 5px; margin: 5px 0; text-align: left;">
-            <option>Humano</option><option>Elfo</option><option>Enano</option><option>Mago</option>
-        </select>
-        <button class="primary" onclick="createCharacter()" style="width:100%">Invocar</button>
+        <h3 style="color: var(--accent);">Grimorio</h3>
+        <div id="creation-zone">
+            <h4>Crear Nuevo Héroe</h4>
+            <input type="text" id="new-name" placeholder="Nombre del Héroe">
+            <select id="new-race">
+                <option value="Humano">Humano</option>
+                <option value="Elfo">Elfo</option>
+                <option value="Enano">Enano</option>
+                <option value="Orco">Orco</option>
+                <option value="Mago">Mago</option>
+            </select>
+            <button class="primary" onclick="createCharacter()" style="width:100%">Despertar Héroe</button>
+        </div>
+
+        <hr style="border-color: #333; margin: 20px 0;">
+
+        <div>
+            <h4 style="color: var(--magic);">✨ Comandos IA</h4>
+            <ul class="guide-list">
+                <li onclick="pasteCmd('El grupo viaja a una mazmorra llena de lava.')">🌋 "Ir a mazmorra de lava..."</li>
+                <li onclick="pasteCmd('Entramos en una biblioteca antigua y polvorienta.')">📚 "Ir a biblioteca..."</li>
+                <li onclick="pasteCmd('Aparecen 3 Esqueletos guerreros.')">💀 "Aparecen 3 Esqueletos..."</li>
+                <li onclick="pasteCmd('Un Dragon Rojo gigante aterriza frente a nosotros.')">🐉 "Aparece un Dragon..."</li>
+            </ul>
+        </div>
     </div>
 
     <div class="main-area">
         <div id="map-container">
-            <img id="map-img" src="fondo.png">
+            <img id="map-img" src="fondo.png" alt="Mapa del Juego">
             <div id="grid-layer" class="layer"></div>
             <div id="token-layer" class="layer"></div>
         </div>
+        
         <div id="chat-container">
             <div id="chat-box"></div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Escribe aquí... (Usa el botón IA para narrar)">
+                <input type="text" id="chat-input" placeholder="Narrar historia o acción... (IA detecta mapas y enemigos)">
                 <button class="primary" onclick="sendMessage()">Enviar</button>
-                <button onclick="askGoogleAI()" class="magic">✨ IA</button>
+                <button onclick="askAIChat()" style="background: linear-gradient(45deg, #bd93f9, #8e44ad); border:none; color:white;">✨ IA</button>
             </div>
         </div>
     </div>
 
     <div class="panel panel-right">
         <div style="text-align: center; margin-bottom: 20px;">
-            <button onclick="rollDice(20)" class="primary" style="font-size: 1.2rem; padding: 10px; width: 100%;">🎲 D20</button>
+            <button onclick="rollDice(20)" class="primary" style="font-size: 1.2rem; padding: 15px 30px; width: 100%;">🎲 D20</button>
+            <div style="margin-top: 5px; display: flex; gap: 5px; justify-content: center;">
+                <button onclick="rollDice(4)">d4</button>
+                <button onclick="rollDice(6)">d6</button>
+                <button onclick="rollDice(8)">d8</button>
+                <button onclick="rollDice(10)">d10</button>
+            </div>
         </div>
-        <h3 style="border-bottom: 1px solid #444;">Personajes</h3>
+        <h3 style="border-bottom: 1px solid #444;">Personajes & Enemigos</h3>
         <div id="char-list"></div>
     </div>
 
     <script type="module">
-        // --- FIREBASE CONFIG ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, updateDoc, setDoc, arrayUnion, getDoc } 
         from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBx_002WWXTyiKT_rrlyaAW0JtHoIiSpTE", // Esta es de Firebase (pública), no tocar.
+            apiKey: "AIzaSyBx_002WWXTyiKT_rrlyaAW0JtHoIiSpTE",
             authDomain: "dungeon-party-ai.firebaseapp.com",
             projectId: "dungeon-party-ai",
             storageBucket: "dungeon-party-ai.firebasestorage.app",
@@ -237,274 +311,323 @@
             appId: "1:409663650732:web:4bf6681e14874039ffd809"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const gameRef = doc(db, "games", "partida_main");
+        let app, db, gameRef;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            gameRef = doc(db, "games", "partida_main");
+        } catch (e) {
+            console.error(e);
+            alert("Error de conexión. Desactiva AdBlock.");
+        }
 
         let gameState = { chat: [], characters: [], mapUrl: "", musicUrl: "" };
         let localPlayer = sessionStorage.getItem("dnd_player") || null;
 
-        // --- GESTIÓN DE JUGADOR Y API KEY ---
-        window.checkLogin = () => {
+        // --- AUTH ---
+        function checkLogin() {
             if (localPlayer) {
                 document.getElementById('login-modal').style.display = 'none';
-                document.getElementById('player-display').innerText = localPlayer;
+                document.getElementById('current-player-display').innerText = localPlayer;
             } else {
                 document.getElementById('login-modal').style.display = 'flex';
             }
-        };
+        }
         window.login = () => {
-            const n = document.getElementById('login-name').value.trim();
-            if(n) { localPlayer = n; sessionStorage.setItem("dnd_player", n); window.checkLogin(); }
+            const name = document.getElementById('login-name').value.trim();
+            if(!name) return;
+            localPlayer = name;
+            sessionStorage.setItem("dnd_player", name);
+            checkLogin();
         };
-        window.logout = () => { sessionStorage.removeItem("dnd_player"); location.reload(); };
+        window.logout = () => {
+            if(confirm("¿Salir?")) { sessionStorage.removeItem("dnd_player"); location.reload(); }
+        };
+        document.getElementById('login-name').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.login(); });
+        checkLogin();
 
-        window.openSettings = () => {
-            document.getElementById('settings-modal').style.display = 'flex';
-            document.getElementById('api-key-input').value = localStorage.getItem('google_ai_key') || "";
-        };
-        window.closeSettings = () => { document.getElementById('settings-modal').style.display = 'none'; };
-        window.saveApiKey = () => {
-            const key = document.getElementById('api-key-input').value.trim();
-            if(key) {
-                localStorage.setItem('google_ai_key', key);
-                alert("✅ Clave guardada correctamente.");
-                window.closeSettings();
-            } else {
-                alert("⚠️ La clave no puede estar vacía.");
-            }
-        };
-
-        // --- LÓGICA DEL JUEGO (FIREBASE) ---
+        // --- INIT ---
         async function initGame() {
-            const docSnap = await getDoc(gameRef);
-            if (!docSnap.exists()) await setDoc(gameRef, { chat: [], characters: [], mapUrl: "fondo.png", musicUrl: "" });
-            onSnapshot(gameRef, (doc) => {
-                if(doc.exists()) {
-                    gameState = doc.data();
-                    renderChat(); renderCharacters(); renderMap(); checkMusic();
+            if (!gameRef) return;
+            try {
+                const docSnap = await getDoc(gameRef);
+                if (!docSnap.exists()) {
+                    await setDoc(gameRef, { chat: [], characters: [], mapUrl: "fondo.png", musicUrl: "" });
                 }
-            });
+                onSnapshot(gameRef, (doc) => {
+                    if(doc.exists()) {
+                        gameState = doc.data();
+                        renderChat(); renderList(); renderMap(); checkMusic();
+                    }
+                });
+            } catch (e) { console.error(e); }
         }
 
         // --- RENDERIZADO ---
         function renderChat() {
-            const box = document.getElementById('chat-box');
-            box.innerHTML = gameState.chat.map(m => 
-                `<div class="msg ${m.type || ''}"><strong>${m.user}:</strong> ${m.text}</div>`
-            ).join('');
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function renderCharacters() {
-            document.getElementById('char-list').innerHTML = gameState.characters.map(c => `
-                <div class="char-card" style="border-left-color:${c.color}">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong>${c.name}</strong> <small>${c.race}</small>
-                        <button class="danger" onclick="deleteChar('${c.id}')" style="padding:0 5px;">×</button>
-                    </div>
-                    <div style="background:#444; height:10px; margin:5px 0; border-radius:5px;">
-                        <div style="width:${(c.hp/c.maxHp)*100}%; background:${c.color}; height:100%; border-radius:5px;"></div>
-                    </div>
-                    <div style="font-size:0.8rem; text-align:center;">HP: ${c.hp} / ${c.maxHp}</div>
-                    <div style="display:flex; gap:5px; margin-top:5px;">
-                        <button onclick="modHp('${c.id}', -1)" style="flex:1;">-</button>
-                        <button onclick="modHp('${c.id}', 1)" style="flex:1;">+</button>
-                    </div>
-                </div>
+            const chatBox = document.getElementById('chat-box');
+            const newHtml = gameState.chat.map(msg => `
+                <div class="msg ${msg.type || ''}"><strong>${msg.user}:</strong> ${msg.text}</div>
             `).join('');
+            if(chatBox.innerHTML !== newHtml) {
+                chatBox.innerHTML = newHtml; chatBox.scrollTop = chatBox.scrollHeight;
+            }
         }
 
-        let isDrag = false, dragId = null;
+        function renderList() {
+            const charList = document.getElementById('char-list');
+            charList.innerHTML = gameState.characters.map((char, idx) => {
+                const hpPercent = (char.hp / char.maxHp) * 100;
+                const stats = char.stats || { str: '?', dex: '?' };
+                const safeId = char.id || char.name; 
+
+                return `
+                    <div class="char-card" style="border-left-color: ${char.color || '#fff'}">
+                        <div class="char-header">
+                            <div><span class="char-name">${char.name}</span> <span class="char-meta">${char.race}</span></div>
+                            <button class="danger" onclick="window.deleteCharacter('${safeId}')">💀</button>
+                        </div>
+                        <div class="hp-container"><div class="hp-bar" style="width:${hpPercent}%; background:${char.color || '#03dac6'}"></div><div class="hp-text">${char.hp} / ${char.maxHp} HP</div></div>
+                        <div class="stats-grid" style="font-size:0.7rem;">
+                            <div class="stat-box">FUE: ${stats.str}</div> <div class="stat-box">DES: ${stats.dex}</div> <div class="stat-box">INT: ${stats.int}</div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                            <button onclick="window.modHp('${safeId}', -1)">Herir</button>
+                            <button onclick="window.modHp('${safeId}', 1)">Curar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let isDragging = false; let draggedCharId = null;
+        
         function renderMap() {
-            if(isDrag) return;
-            const img = document.getElementById('map-img');
-            if(!img.src.includes(gameState.mapUrl || 'fondo.png')) img.src = gameState.mapUrl || 'fondo.png';
+            if (isDragging) return; 
+            // Si no hay URL, usar fondo.jpg
+            const currentMap = gameState.mapUrl || "fondo.png";
+            const mapImg = document.getElementById('map-img');
+            // Solo cambiar si la fuente es diferente para evitar parpadeo
+            if (!mapImg.src.includes(currentMap)) {
+                mapImg.src = currentMap;
+            }
             
-            const layer = document.getElementById('token-layer');
-            layer.innerHTML = "";
-            gameState.characters.forEach(c => {
-                const t = document.createElement('div');
-                t.className = 'token'; t.style.left = c.x + '%'; t.style.top = c.y + '%';
-                t.style.borderColor = c.color; t.style.background = c.color; t.innerText = c.name.substring(0,2).toUpperCase();
-                t.innerHTML += `<div class="token-name">${c.name}</div>`;
-                t.onmousedown = (e) => { isDrag = true; dragId = c.id; e.preventDefault(); };
-                layer.appendChild(t);
+            const tokenLayer = document.getElementById('token-layer');
+            tokenLayer.innerHTML = ""; 
+            
+            gameState.characters.forEach(char => {
+                const x = char.x || 50; const y = char.y || 50;
+                const safeId = char.id || char.name;
+
+                const token = document.createElement('div');
+                token.className = 'token';
+                token.id = `token-${safeId}`;
+                token.style.left = x + '%'; token.style.top = y + '%';
+                token.style.backgroundColor = char.color || '#555';
+                token.innerText = char.name.substring(0, 2).toUpperCase();
+                
+                const label = document.createElement('div');
+                label.className = 'token-name'; label.innerText = char.name;
+                token.appendChild(label);
+                
+                token.onmousedown = (e) => startDrag(e, safeId);
+                tokenLayer.appendChild(token);
             });
         }
 
-        // --- INPUTS Y EVENTOS ---
-        const mapCont = document.getElementById('map-container');
+        function startDrag(e, id) { isDragging = true; draggedCharId = id; e.preventDefault(); e.stopPropagation(); }
+
+        const mapContainer = document.getElementById('map-container');
         window.addEventListener('mousemove', (e) => {
-            if(!isDrag) return;
-            const r = mapCont.getBoundingClientRect();
-            let x = ((e.clientX - r.left)/r.width)*100, y = ((e.clientY - r.top)/r.height)*100;
-            // Limitar a 0-100%
-            x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
-            // Actualizar visualmente (sin guardar aún para rendimiento)
-            // (Simplificado: en este código actualizamos visualmente al soltar o podríamos mover el elemento DOM directament)
-        });
-        window.addEventListener('mouseup', async (e) => {
-            if(!isDrag) return;
-            const r = mapCont.getBoundingClientRect();
-            let x = ((e.clientX - r.left)/r.width)*100, y = ((e.clientY - r.top)/r.height)*100;
+            if (!isDragging) return;
+            const rect = mapContainer.getBoundingClientRect();
+            let x = ((e.clientX - rect.left) / rect.width) * 100;
+            let y = ((e.clientY - rect.top) / rect.height) * 100;
             x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
             
-            const newChars = gameState.characters.map(c => {
-                if(c.id === dragId) { c.x = x; c.y = y; } return c;
-            });
-            isDrag = false; dragId = null;
-            await updateDoc(gameRef, { characters: newChars });
+            const tokenEl = document.getElementById(`token-${draggedCharId}`);
+            if(tokenEl) {
+                tokenEl.style.left = x + '%'; tokenEl.style.top = y + '%'; tokenEl.style.zIndex = 1000;
+            }
         });
 
-        // --- ACCIONES DM ---
-        window.createCharacter = async () => {
-            const name = document.getElementById('new-name').value;
-            const race = document.getElementById('new-race').value;
-            if(!name) return;
-            const newChar = {
-                id: Date.now().toString(), name, race, hp: 20, maxHp: 20,
-                x: 50, y: 50, color: `hsl(${Math.random()*360}, 70%, 50%)`
+        window.addEventListener('mouseup', async (e) => {
+            if (!isDragging) return;
+            const rect = mapContainer.getBoundingClientRect();
+            let x = ((e.clientX - rect.left) / rect.width) * 100;
+            let y = ((e.clientY - rect.top) / rect.height) * 100;
+            x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
+            
+            const chars = gameState.characters.map(c => { 
+                const safeId = c.id || c.name;
+                if(safeId === draggedCharId) { c.x = x; c.y = y; } 
+                return c; 
+            });
+            isDragging = false; draggedCharId = null;
+            await updateDoc(gameRef, { characters: chars });
+        });
+
+        // --- SISTEMA DE MÚSICA (NATIVO HTML5) ---
+        let currentMusicUrl = "";
+        
+        function checkMusic() {
+            // Sincronización de música
+            if (gameState.musicUrl && gameState.musicUrl !== currentMusicUrl) {
+                currentMusicUrl = gameState.musicUrl;
+                const audio = document.getElementById('audio-player');
+                audio.src = currentMusicUrl;
+                audio.play().catch(e => console.log("Auto-play bloqueado hasta interacción usuario."));
+            } else if (!gameState.musicUrl && currentMusicUrl) {
+                // Si se borró la música, detener
+                currentMusicUrl = "";
+                const audio = document.getElementById('audio-player');
+                audio.pause();
+                audio.src = "";
+            }
+        }
+
+        window.playMusic = async (url) => {
+            await updateDoc(gameRef, { musicUrl: url });
+        };
+
+        window.stopMusic = async () => {
+            await updateDoc(gameRef, { musicUrl: "" });
+        };
+
+        // --- LÓGICA DE JUEGO ---
+        function getRandomColor(type = "player") {
+            const hue = type === "enemy" ? Math.floor(Math.random() * 60) + 330 : Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 70%, 40%)`;
+        }
+        function rollStat() { return Math.floor(Math.random() * 16) + 3; }
+
+        window.spawnCharacter = async (name, race, isEnemy = false) => {
+            const offsetX = 50 + (Math.random() * 10 - 5);
+            const offsetY = 50 + (Math.random() * 10 - 5);
+            
+            const hp = isEnemy ? Math.floor(Math.random() * 15) + 5 : 20;
+            const newChar = { 
+                id: Date.now().toString() + Math.random().toString().slice(2,5), 
+                name, race, hp, maxHp: hp, inventory: [], 
+                x: offsetX, y: offsetY, 
+                color: getRandomColor(isEnemy ? "enemy" : "player"), 
+                stats: { str: rollStat(), dex: rollStat(), int: rollStat(), per: rollStat(), cha: rollStat() }
             };
             await updateDoc(gameRef, { characters: arrayUnion(newChar) });
+        };
+
+        window.createCharacter = async () => {
+            const name = document.getElementById('new-name').value.trim();
+            const race = document.getElementById('new-race').value;
+            if(!name) return;
+            await window.spawnCharacter(name, race);
             document.getElementById('new-name').value = "";
         };
-        window.deleteChar = async(id) => {
-            const list = gameState.characters.filter(c => c.id !== id);
-            await updateDoc(gameRef, { characters: list });
-        };
-        window.modHp = async(id, v) => {
-            const list = gameState.characters.map(c => {
-                if(c.id === id) c.hp += v; return c;
-            });
-            await updateDoc(gameRef, { characters: list });
-        };
-        window.updateMap = async() => {
-            const url = document.getElementById('map-url').value;
-            if(url) await updateDoc(gameRef, { mapUrl: url });
-        };
-        window.toggleGrid = () => document.getElementById('grid-layer').classList.toggle('visible');
-        window.resetChat = async() => await updateDoc(gameRef, { chat: [] });
-        window.resetCharacters = async() => await updateDoc(gameRef, { characters: [] });
-        window.sendMessage = async() => {
-            const t = document.getElementById('chat-input').value;
-            if(t) {
-                await updateDoc(gameRef, { chat: arrayUnion({ user: localPlayer, text: t }) });
-                document.getElementById('chat-input').value = "";
+
+        window.deleteCharacter = async (id) => {
+            if(confirm("¿Eliminar?")) {
+                const newChars = gameState.characters.filter(c => c.id !== id && c.name !== id);
+                await updateDoc(gameRef, { characters: newChars });
             }
-        };
-        window.rollDice = async(s) => {
-            const r = Math.floor(Math.random()*s)+1;
-            await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `${localPlayer} tiró 1d${s} ➔ ${r}`, type: "system" }) });
         };
         
-        // --- AUDIO ---
-        let lastMusic = "";
-        function checkMusic() {
-            if(gameState.musicUrl !== lastMusic) {
-                lastMusic = gameState.musicUrl;
-                const a = document.getElementById('audio-player');
-                if(lastMusic) { a.src = lastMusic; a.play().catch(e=>console.log("Autoplay blocked")); }
-                else { a.pause(); }
-            }
-        }
-        window.playMusic = async(u) => await updateDoc(gameRef, { musicUrl: u });
-        window.stopMusic = async() => await updateDoc(gameRef, { musicUrl: "" });
-
-        // ======================================================
-        // 🧠 CEREBRO DE IA - EXCLUSIVO GOOGLE FREE TIER (v1beta)
-        // ======================================================
-        window.askGoogleAI = async () => {
-            const key = localStorage.getItem('google_ai_key');
-            if(!key) {
-                alert("⚠️ FALTA API KEY. Ve a Configuración y pégala.");
-                window.openSettings();
-                return;
-            }
-
-            const input = document.getElementById('chat-input');
-            const query = input.value;
-            if(!query) return alert("Escribe algo en el chat primero.");
-            
-            input.value = "🔮 Invocando a Gemini...";
-
-            // PROMPT ESTRICTO
-            const prompt = `
-            Actúa como un Dungeon Master de D&D. 
-            Entrada del Jugador: "${query}"
-            
-            IMPORTANTE: Responde SOLO con este formato exacto usando separadores |||:
-            HISTORIA: [Narración en español, inmersiva pero breve] ||| MAPA: [Descripción visual en inglés del entorno para generar una imagen top-down battlemap, o NULL si el lugar no cambia] ||| ENEMIGOS: [Lista de nombres de enemigos en español separados por comas, o NULL si no aparecen nuevos]
-            `;
-
-            try {
-                // MODELO: gemini-1.5-flash (El mejor para Free Tier actualmente)
-                // VERSION: v1beta (Necesaria para Flash)
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-                
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-
-                if(!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error?.message || "Error desconocido de API");
-                }
-
-                const data = await response.json();
-                const textResponse = data.candidates[0].content.parts[0].text;
-
-                // PROCESAMIENTO
-                const parts = textResponse.split('|||');
-                const historia = parts[0]?.replace(/HISTORIA:/i, '').trim();
-                const mapaPrompt = parts[1]?.replace(/MAPA:/i, '').trim();
-                const enemigos = parts[2]?.replace(/ENEMIGOS:/i, '').trim();
-
-                // 1. Enviar historia
-                if(historia) await updateDoc(gameRef, { chat: arrayUnion({ user: "DM IA", text: historia, type: "ai" }) });
-
-                // 2. Generar Mapa (Si aplica)
-                if(mapaPrompt && !mapaPrompt.toUpperCase().includes("NULL") && mapaPrompt.length > 5) {
-                    const seed = Math.floor(Math.random() * 10000);
-                    // Usamos Pollinations SOLO para la imagen (esto siempre es gratis y estable)
-                    const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${mapaPrompt} ${seed}?width=1080&height=720&nologo=true`;
-                    await updateDoc(gameRef, { mapUrl: mapUrl });
-                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: "🌍 El escenario ha cambiado...", type: "system" }) });
-                }
-
-                // 3. Invocar Enemigos (Si aplica)
-                if(enemigos && !enemigos.toUpperCase().includes("NULL") && enemigos.length > 2) {
-                    const lista = enemigos.split(',');
-                    for(let e of lista) {
-                        let nombreLimpio = e.trim().replace(/[".]/g, '');
-                        if(nombreLimpio) {
-                            const newEnemy = {
-                                id: Date.now() + Math.random().toString(), 
-                                name: nombreLimpio, race: "Enemigo", hp: 15, maxHp: 15,
-                                x: 50 + (Math.random()*10-5), y: 50 + (Math.random()*10-5), 
-                                color: "#cf6679"
-                            };
-                            await updateDoc(gameRef, { characters: arrayUnion(newEnemy) });
-                        }
-                    }
-                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `⚠️ Enemigos detectados: ${enemigos}`, type: "system" }) });
-                }
-
-                input.value = ""; // Limpiar input si todo salió bien
-
-            } catch (error) {
-                console.error(error);
-                alert("Error de IA: " + error.message);
-                input.value = query; // Devolver el texto para que no se pierda
+        window.resetCharacters = async () => {
+            if(confirm("¿Borrar SOLO los personajes?")) {
+                await updateDoc(gameRef, { characters: [] });
             }
         };
 
-        // Inicializar
-        checkLogin();
-        initGame();
+        // --- TERMINAR PARTIDA (RESET TOTAL) ---
+        window.endGame = async () => {
+            if(confirm("⚠️ ¿ESTÁS SEGURO? ESTO BORRARÁ TODO: CHAT, PERSONAJES Y MAPA.")) {
+                await updateDoc(gameRef, { 
+                    characters: [], 
+                    chat: [],
+                    mapUrl: "fondo.png", // Reset a imagen por defecto
+                    musicUrl: ""
+                });
+                alert("La partida ha terminado. Todo ha sido reseteado.");
+            }
+        };
 
+        window.modHp = async (id, amount) => {
+            const chars = gameState.characters.map(c => { 
+                const safeId = c.id || c.name;
+                if(safeId === id) c.hp = Math.min(c.maxHp, Math.max(0, c.hp + amount)); 
+                return c; 
+            });
+            await updateDoc(gameRef, { characters: chars });
+        };
+        window.rollDice = async (sides) => {
+            const result = Math.floor(Math.random() * sides) + 1;
+            const overlay = document.getElementById('dice-overlay'); overlay.innerText = result; overlay.className = "active";
+            setTimeout(() => overlay.className = "", 1500);
+            await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `${localPlayer} tiró 1d${sides} ➔ ${result}`, type: "system" }) });
+        };
+        window.updateMap = async () => { const url = document.getElementById('map-url').value; if(url) await updateDoc(gameRef, { mapUrl: url }); };
+        window.toggleGrid = () => { document.getElementById('grid-layer').classList.toggle('visible'); };
+        window.resetChat = async () => { if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] }); };
+
+        // --- CEREBRO IA ---
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        window.sendMessage = async () => {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+            await updateDoc(gameRef, { chat: arrayUnion({ user: localPlayer, text: text }) });
+            input.value = "";
+        };
+
+        window.askAIChat = async () => {
+            const input = document.getElementById('chat-input');
+            const query = input.value;
+            if(!query) return alert("Escribe qué quieres que haga la IA...");
+            input.value = "La IA está tejiendo la realidad...";
+
+            const systemPrompt = `
+            Eres un Dungeon Master. Responde SIEMPRE en formato JSON estricto.
+            Entrada: "${query}"
+            JSON Esperado:
+            {
+                "narrative": "Texto de la historia (max 200 chars)",
+                "new_map_prompt": "Si cambia el lugar, describe el mapa visualmente (ej: 'lava dungeon top down'). Si no, null.",
+                "spawn_enemies": [ {"name": "Nombre", "race": "Raza"} ] (Si aparecen enemigos, lístalos. Si no, [])
+            }`;
+
+            try {
+                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}`);
+                let text = await res.text();
+                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const aiData = JSON.parse(text);
+
+                if(aiData.narrative) await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: aiData.narrative, type: "ai" }) });
+
+                if(aiData.new_map_prompt) {
+                    const seed = Math.floor(Math.random() * 999);
+                    const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${aiData.new_map_prompt} ${seed}?width=1080&height=720&nologo=true`;
+                    await updateDoc(gameRef, { mapUrl: mapUrl });
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: "🌍 Generando nuevo mapa...", type: "system" }) });
+                }
+
+                if(aiData.spawn_enemies && aiData.spawn_enemies.length > 0) {
+                    for(const enemy of aiData.spawn_enemies) {
+                        await window.spawnCharacter(enemy.name, enemy.race, true);
+                    }
+                    await updateDoc(gameRef, { chat: arrayUnion({ user: "Sistema", text: `⚠️ ${aiData.spawn_enemies.length} enemigos aparecieron.`, type: "system" }) });
+                }
+                input.value = "";
+            } catch(e) {
+                console.error(e);
+                const fb = await fetch(`https://text.pollinations.ai/${encodeURIComponent("DM responde: " + query)}`);
+                const fbText = await fb.text();
+                await updateDoc(gameRef, { chat: arrayUnion({ user: "AI DM", text: fbText, type: "ai" }) });
+                input.value = "";
+            }
+        };
+
+        window.pasteCmd = (text) => { document.getElementById('chat-input').value = text; };
+
+        initGame();
     </script>
 </body>
 </html>
