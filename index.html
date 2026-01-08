@@ -15,6 +15,7 @@
             --text-muted: #a0a0a0;
             --danger: #cf6679;
             --magic: #bd93f9;
+            --success: #03dac6;
         }
 
         body {
@@ -32,23 +33,25 @@
             user-select: none;
         }
 
-        /* --- LOGIN MODAL --- */
-        #login-modal {
+        /* --- MODALES --- */
+        .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,1);
-            z-index: 2000;
+            background: rgba(0,0,0,0.9); z-index: 2000;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
         }
-        .login-box {
+        .modal-box {
             background: var(--bg-panel); border: 2px solid var(--accent);
-            padding: 40px; text-align: center; border-radius: 10px;
+            padding: 30px; text-align: center; border-radius: 10px;
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
-            max-width: 400px; width: 90%;
+            max-width: 450px; width: 90%; position: relative;
         }
-        .login-box input { 
-            width: 100%; font-size: 1.2rem; padding: 10px; margin: 20px 0; 
+        .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #fff; font-weight: bold; }
+        
+        .login-input, .api-input { 
+            width: 100%; font-size: 1.1rem; padding: 10px; margin: 15px 0; 
             text-align: center; background: #333; color: white; border: 1px solid #555;
+            border-radius: 5px;
         }
 
         header {
@@ -71,6 +74,7 @@
         button.primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
         button.danger { background: var(--danger); color: #fff; border: none; }
         button.magic { background: var(--magic); color: #000; font-weight: bold; border: none; }
+        button.settings { background: #333; border: 1px solid var(--accent); color: var(--accent); }
 
         input, select, textarea {
             background: #2b2b2b; border: 1px solid #444; color: white; padding: 8px;
@@ -145,10 +149,7 @@
         .stat-lbl { font-size: 0.6rem; color: #888; display: block; }
         .stat-val { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
 
-        .inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
-        .inv-btn-del { color: var(--danger); background: none; border: none; padding: 0 5px; }
-
-        /* STATS INPUTS */
+        /* INPUTS ESTADISTICAS */
         .stats-inputs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px; }
         .stats-inputs input { text-align: center; padding: 5px; font-size: 0.9rem; }
         .stats-inputs label { font-size: 0.6rem; color: #aaa; text-align: center; display: block; margin-bottom: 2px; }
@@ -161,7 +162,7 @@
         }
         #dice-overlay.active { opacity: 1; transform: scale(1); }
 
-        /* REPRODUCTOR NATIVO */
+        /* REPRODUCTOR */
         .music-container { 
             margin-bottom: 20px; background: #000; border: 1px solid #444; padding: 10px; border-radius: 5px; text-align: center;
         }
@@ -183,13 +184,28 @@
 </head>
 <body>
 
-    <div id="login-modal">
-        <div class="login-box">
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-box">
             <h1><img src="dd.png" width="120px"></h1>
             <h2>Dungeon Portal</h2>
             <p>Introduce tu nombre de aventurero.</p>
-            <input type="text" id="login-name" placeholder="Nombre..." autocomplete="off">
+            <input type="text" id="login-name" class="login-input" placeholder="Nombre..." autocomplete="off">
             <button class="primary" onclick="login()" style="width:100%; font-size:1.1rem; padding: 15px;">ENTRAR AL MUNDO</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <span class="modal-close" onclick="closeSettings()">✕</span>
+            <h2 style="color: var(--magic);">🔮 Configuración de IA</h2>
+            <p style="font-size: 0.9rem; color: #ccc;">
+                Para que la IA funcione sin errores y gratis, necesitas tu propia <strong>Google Gemini API Key</strong>. 
+                <br><br>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent);">👉 Consigue tu Key aquí (Gratis)</a>
+            </p>
+            <input type="password" id="api-key-input" class="api-input" placeholder="Pega tu clave aquí (AIzaSy...)" autocomplete="off">
+            <button class="magic" onclick="saveApiKey()" style="width:100%; padding: 10px;">💾 Guardar Clave</button>
+            <p style="font-size: 0.8rem; margin-top: 10px; color: #777;">La clave se guarda en TU navegador. Nadie más la ve.</p>
         </div>
     </div>
 
@@ -197,9 +213,12 @@
 
     <header>
         <h1><img src="dd.png" width="100px"> Dungeon Portal</h1>
-        <div style="font-size: 0.9rem;">
-            👤 <span id="current-player-display" style="color: var(--accent);">...</span>
-            <button onclick="logout()" style="font-size:0.7rem; padding: 2px 5px; margin-left: 10px;">Salir</button>
+        <div style="font-size: 0.9rem; display: flex; align-items: center; gap: 10px;">
+            <button class="settings" onclick="openSettings()">⚙️ Config IA</button>
+            <div>
+                👤 <span id="current-player-display" style="color: var(--accent);">...</span>
+                <button onclick="logout()" style="font-size:0.7rem; padding: 2px 5px; margin-left: 5px;">Salir</button>
+            </div>
         </div>
     </header>
 
@@ -265,7 +284,7 @@
         <hr style="border-color: #333; margin: 20px 0;">
 
         <div>
-            <h4 style="color: var(--magic);">✨ Comandos Mágicos (IA)</h4>
+            <h4 style="color: var(--magic);">✨ Comandos Mágicos</h4>
             <ul class="guide-list">
                 <li onclick="pasteCmd('El grupo viaja a una mazmorra llena de lava.')">🌋 "Ir a mazmorra..."</li>
                 <li onclick="pasteCmd('Entramos en una biblioteca antigua.')">📚 "Ir a biblioteca..."</li>
@@ -332,27 +351,45 @@
         let gameState = { chat: [], characters: [], mapUrl: "", musicUrl: "" };
         let localPlayer = sessionStorage.getItem("dnd_player") || null;
 
-        // --- AUTH ---
-        function checkLogin() {
+        // --- AUTH & SETTINGS ---
+        window.checkLogin = () => {
             if (localPlayer) {
                 document.getElementById('login-modal').style.display = 'none';
                 document.getElementById('current-player-display').innerText = localPlayer;
             } else {
                 document.getElementById('login-modal').style.display = 'flex';
             }
-        }
+        };
         window.login = () => {
             const name = document.getElementById('login-name').value.trim();
             if(!name) return;
             localPlayer = name;
             sessionStorage.setItem("dnd_player", name);
-            checkLogin();
+            window.checkLogin();
         };
         window.logout = () => {
             if(confirm("¿Salir?")) { sessionStorage.removeItem("dnd_player"); location.reload(); }
         };
+        
+        // --- API KEY MANAGEMENT ---
+        window.openSettings = () => { 
+            document.getElementById('settings-modal').style.display = 'flex'; 
+            document.getElementById('api-key-input').value = localStorage.getItem('gemini_api_key') || "";
+        };
+        window.closeSettings = () => { document.getElementById('settings-modal').style.display = 'none'; };
+        window.saveApiKey = () => {
+            const key = document.getElementById('api-key-input').value.trim();
+            if(key) {
+                localStorage.setItem('gemini_api_key', key);
+                alert("Clave guardada en tu navegador.");
+                window.closeSettings();
+            } else {
+                alert("Por favor ingresa una clave válida.");
+            }
+        };
+
         document.getElementById('login-name').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.login(); });
-        checkLogin();
+        window.checkLogin();
 
         // --- INIT ---
         async function initGame() {
@@ -546,8 +583,8 @@
         window.toggleGrid = () => { document.getElementById('grid-layer').classList.toggle('visible'); };
         window.resetChat = async () => { if(confirm("¿Borrar chat?")) await updateDoc(gameRef, { chat: [] }); };
 
-        // --- CEREBRO IA (CAMBIO A HERCAI - GRATIS Y ESTABLE) ---
-        // Se ha eliminado Google (API Key) y Pollinations (Error 502)
+        // --- CEREBRO IA (GEMINI - USER KEY) ---
+        // Solución robusta: El usuario pone su clave, no hay bloqueo de GitHub ni CORS.
         
         document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         window.sendMessage = async () => {
@@ -559,37 +596,50 @@
         };
 
         window.askAIChat = async () => {
+            // 1. Verificar si hay clave
+            const userKey = localStorage.getItem('gemini_api_key');
+            if(!userKey) {
+                window.openSettings();
+                return alert("⚠️ Para usar la IA, primero pega tu API Key en Configuración.");
+            }
+
             const input = document.getElementById('chat-input');
             const query = input.value;
             if(!query) return alert("Escribe qué quieres que haga la IA...");
             
-            input.value = "Invocando sabiduría arcana...";
+            input.value = "Conjurando realidad...";
 
-            // Prompt muy comprimido para evitar errores de longitud en servidores gratuitos
-            // Instrucciones: Separa HISTORIA, MAPA (inglés), ENEMIGOS (lista) con |||
-            const basePrompt = `Role:DM.Input:"${query}".Output format: STORY(Spanish)|||MAP_PROMPT(English,Visual)||ENEMIES(Spanish,List). If no map change: NULL. If no enemies: NULL. Keep story short.`;
+            const prompt = `
+            Eres un Dungeon Master experto. Entrada del usuario: "${query}"
             
-            // Limpiamos la URL para evitar errores 502 Bad Gateway
-            const encodedPrompt = encodeURIComponent(basePrompt);
+            IMPORTANTE: Responde SOLO con este formato exacto usando separadores |||:
+            HISTORIA: [Narración breve en español] ||| MAPA: [Descripción visual en inglés para generar imagen, o NULL si no cambia el lugar] ||| ENEMIGOS: [Lista de nombres de enemigos separados por comas en español, o NULL si no hay nuevos]
+            `;
 
             try {
-                // Usamos HERCAI (API Gratuita alternativa a Pollinations/Google)
-                const response = await fetch(`https://hercai.onrender.com/v3/hercai?question=${encodedPrompt}`);
-                
-                if(!response.ok) throw new Error("La IA está durmiendo (Error servidor)");
-                
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
                 const data = await response.json();
-                const text = data.reply || data.content; // Hercai a veces usa 'reply' o 'content'
+                
+                if(data.error) {
+                    throw new Error(data.error.message || "Error API");
+                }
 
-                // Parseo manual de la respuesta
+                const text = data.candidates[0].content.parts[0].text;
+                
+                // Parseo
                 const parts = text.split('|||');
-                const narrative = parts[0]?.replace('STORY:', '').replace('HISTORIA:', '').trim();
-                const mapPrompt = parts[1]?.replace('MAP_PROMPT:', '').replace('MAPA:', '').trim();
-                const enemies = parts[2]?.replace('ENEMIES:', '').replace('ENEMIGOS:', '').trim();
+                const narrative = parts[0]?.replace('HISTORIA:', '').trim();
+                const mapPrompt = parts[1]?.replace('MAPA:', '').trim();
+                const enemies = parts[2]?.replace('ENEMIGOS:', '').trim();
 
-                if(narrative) await updateDoc(gameRef, { chat: arrayUnion({ user: "Game Master", text: narrative, type: "ai" }) });
+                if(narrative) await updateDoc(gameRef, { chat: arrayUnion({ user: "Gemini DM", text: narrative, type: "ai" }) });
 
-                // Generación de Mapa (Seguimos usando Pollinations Image, que sí funciona bien)
+                // Generación de Mapa (Pollinations via URL Image - ESTO SÍ FUNCIONA SIEMPRE)
                 if(mapPrompt && mapPrompt !== 'NULL' && mapPrompt !== 'null' && mapPrompt.length > 3) {
                     const seed = Math.floor(Math.random() * 999);
                     const mapUrl = `https://image.pollinations.ai/prompt/dnd battle map top down rpg gridless ${mapPrompt} ${seed}?width=1080&height=720&nologo=true`;
@@ -607,9 +657,15 @@
                 }
                 
                 input.value = "";
+
             } catch(e) {
                 console.error(e);
-                alert("Error de conexión con la IA (Hercai). Intenta una orden más simple.");
+                if(e.message.includes('API key not valid') || e.message.includes('403')) {
+                    alert("Tu API Key es inválida o ha expirado. Revísala en Configuración.");
+                    window.openSettings();
+                } else {
+                    alert("Error con Gemini: " + e.message);
+                }
                 input.value = query;
             }
         };
